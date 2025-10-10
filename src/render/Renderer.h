@@ -13,7 +13,8 @@ public:
 
     std::uint32_t* GetFinalImageData() const { return m_ImageData; }
 private:
-    uint32_t perPixel(glm::vec2 coord);
+    glm::vec4 perPixel(glm::vec2 coord);
+    uint32_t vec4ToRGBA8(glm::vec4 color);
 
     std::uint32_t*  m_ImageData;
     uint32_t m_Width, m_Height;
