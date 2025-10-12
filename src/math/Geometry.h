@@ -9,7 +9,7 @@ struct Ray {
         : Origin(origin), Direction(glm::normalize(direction)) {
     }
 
-    [[nodiscard]] glm::vec3 PointAt(float t) const { return Origin + t * Direction; }
+    [[nodiscard]] glm::vec3 PointAt(const float t) const { return Origin + t * Direction; }
 };
 
 struct SphereIntersections
@@ -44,22 +44,19 @@ struct Sphere {
             - Radius * Radius;
 
         // D = b^2 - 4ac
-        const float discriminant = (b * b) - (4 * a * c);
+        const float discriminant = (b * b) - 4 * a * c;
         if (discriminant < 0) {
             return SphereIntersections(0);
         }
-        const float t1 = (-b + sqrt(discriminant)) / (2 * a);
+        const float t1 = (-b - sqrt(discriminant)) / (2 * a);
         if (discriminant == 0) {
             return SphereIntersections(1, ray.PointAt(t1));
         }
-        const float t2 = (-b - sqrt(discriminant)) / (2 * a);
-        if (t1 < t2) {
-            return SphereIntersections(2, ray.PointAt(t1), ray.PointAt(t2));
-        }
-        return SphereIntersections(2, ray.PointAt(t2), ray.PointAt(t1));
+        const float t2 = (-b + sqrt(discriminant)) / (2 * a);
+        return SphereIntersections(2, ray.PointAt(t1), ray.PointAt(t2));
     }
 
-    glm::vec3 NormalAtPoint(const glm::vec3 &point) const {
+    [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const {
         return glm::normalize(point - Center);
     }
 };

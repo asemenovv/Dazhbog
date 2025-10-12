@@ -5,16 +5,15 @@
 
 class Renderer {
 public:
-    Renderer() = default;
+    Renderer(glm::vec2 viewportSize);
 
     void Render();
 
     void OnResize(uint32_t width, uint32_t height);
 
-    std::uint32_t* GetFinalImageData() const { return m_ImageData; }
+    [[nodiscard]] std::uint32_t* GetFinalImageData() const { return m_ImageData; }
 private:
     glm::vec4 perPixel(glm::vec2 coord);
-    uint32_t vec4ToRGBA8(glm::vec4 color);
 
     std::uint32_t*  m_ImageData;
     uint32_t m_Width, m_Height;

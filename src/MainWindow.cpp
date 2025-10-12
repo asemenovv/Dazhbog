@@ -8,32 +8,33 @@
 #include <QWidget>
 #include <QPainter>
 #include <QVBoxLayout>
+#include <QTimer>
+#include <QResizeEvent>
 
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(const ResizeHandler &resizeHandler, QWidget* parent) : QMainWindow(parent), m_ResizeHandler(resizeHandler) {
     setupUi();
     statusBar()->showMessage("Ready");
-
-    m_Renderer = std::make_unique<Renderer>();
 }
 
-void MainWindow::onRenderClicked() const {
-    const int width = m_Canvas->width();
-    const int height = m_Canvas->height();
-    m_Renderer->OnResize(width, height);
+void MainWindow::UpdateRenderTime(qint64 renderTime) {
+    m_RenderTimeLabel->setText(QString("Render time: %1 ms").arg(renderTime));
+}
 
-    QElapsedTimer timer;
-    timer.start();
-    m_Renderer->Render();
-
-    const qint64 elapsedMs = timer.elapsed();
-    m_RenderTimeLabel->setText(QString("Render time: %1 ms").arg(elapsedMs));
-
-    const auto imageData = m_Renderer->GetFinalImageData();
-
-    const QImage img(reinterpret_cast<const uchar*>(imageData), width, height,
-        width * 4, QImage::Format_RGBA8888);
+void MainWindow::ShowImage(const uint32_t *pixels) const {
+    const auto width = m_Canvas->width();
+    const auto height = m_Canvas->height();
+    const QImage img(reinterpret_cast<const uchar*>(pixels), width, height,
+                     width * 4, QImage::Format_RGBA8888);
     m_Canvas->SetImage(img.flipped());
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    m_ResizeHandler(m_Canvas->width(), m_Canvas->height());
+    QMainWindow::resizeEvent(event);
+}
+
+void MainWindow::onRenderClicked() {
 }
 
 void MainWindow::setupUi() {

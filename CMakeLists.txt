@@ -12,14 +12,14 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        src/MainWindow.h
         src/MainWindow.cpp
-        src/ImageCanvas.h
         src/ImageCanvas.cpp
         src/render/Renderer.cpp
-        src/render/Renderer.h
-        src/math/Geometry.h
+        src/render/Camera.cpp
+        src/Application.cpp
 )
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
 add_subdirectory(deps/glm)
 add_subdirectory(deps/stb_image_wrapper)

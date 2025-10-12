@@ -1,0 +1,31 @@
+#pragma once
+
+#include <glm/glm.hpp>
+
+class Camera {
+public:
+    Camera(float verticalFOV, float nearClip, float farClip);
+
+    void OnResize(uint32_t width, uint32_t height);
+
+    void RecalculateProjection();
+
+    void RecalculateView();
+
+    void RecalculateRayDirections();
+private:
+    glm::mat4 m_Projection{ 1.0f };
+    glm::mat4 m_View{ 1.0f };
+    glm::mat4 m_InverseProjection{ 1.0f };
+    glm::mat4 m_InverseView{ 1.0f };
+
+    float m_VerticalFOV = 45.0f;
+    float m_NearClip = 0.1f;
+    float m_FarClip = 100.0f;
+
+    glm::vec3 m_ForwardDirection;
+    glm::vec3 m_Position;
+
+    std::vector<glm::vec3> m_RayDirections;
+    uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+};

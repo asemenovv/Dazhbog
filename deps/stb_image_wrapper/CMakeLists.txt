@@ -10,7 +10,9 @@ add_library(stb_image STATIC stb_image.cpp
         ../../src/ImageCanvas.cpp
         ../../src/ImageCanvas.h
         ../../src/ImageCanvas.cpp
-        ../../src/ImageCanvas.h)
+        ../../src/ImageCanvas.h
+        ../../src/Application.cpp
+        ../../src/Application.h)
 
 target_include_directories(stb_image PUBLIC ${ROOT_FOLDER}/deps/stb_image)
 
