@@ -2,6 +2,7 @@
 
 #include <QKeyEvent>
 
+#include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/scalar_constants.hpp"
 
 Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
@@ -37,12 +38,12 @@ void Application::SetupScene() {
     constexpr Material blueMaterial = {
         .Albedo = {0.0, 0.0, 1.0}
     };
-    m_Scene->Add(new Sphere(1.0f, pinkyMaterial, glm::vec3(0.0f, 0.0f, -3.0f)));
-    constexpr float spheresCount = 16.0f;
+    m_Scene->Add(new Sphere(0.5f, pinkyMaterial, glm::vec3(0.0f, 0.0f, 0.0f)));
+    constexpr int spheresCount = 4;
     for (int i = 0; i < spheresCount; i++)
     {
-        float x = std::cos(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
-        float z = std::sin(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        const float x = 2.0f * std::cos(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        const float z = 2.0f * std::sin(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
         auto center = glm::vec3(x, 0.0f, z);
         m_Scene->Add(new Sphere(0.125f, blueMaterial, center));
     }
@@ -57,9 +58,21 @@ void Application::OnRender() {
 
     const auto imageData = m_Renderer->GetFinalImageData();
     m_Window->ShowImage(imageData);
+    OnUpdate(static_cast<float>(m_RenderTimeMs));
 }
 
-void Application::OnUpdate(float deltaTime) {
+float ROTATION_SPEED = 0.05f;
+
+void Application::OnUpdate(const float deltaTime) {
+    for (const std::unique_ptr<Sphere>& sphere : m_Scene->GetSpheres())
+    {
+        auto rotation = glm::rotate(
+            glm::mat4{1.0f},
+            glm::radians(ROTATION_SPEED * deltaTime),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+        sphere->MoveTo(glm::vec3(rotation * sphere->GetCenter()));
+    }
 }
 
 void Application::OnCanvasResize(const int width, const int height) const

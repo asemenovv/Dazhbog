@@ -28,3 +28,8 @@ ModelIntersections Sphere::Intersects(const Ray& ray) const {
 glm::vec3 Sphere::NormalAtPoint(const glm::vec3& point) const {
     return glm::normalize(point - m_Center);
 }
+
+void Sphere::MoveTo(const glm::vec3& point)
+{
+    m_Center = point;
+}

@@ -42,6 +42,10 @@ public:
     [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const;
 
     Material& GetMaterial() { return m_Material; }
+
+    [[nodiscard]] glm::vec4 GetCenter() const { return {m_Center, 1.0f}; };
+
+    void MoveTo(const glm::vec3 &point);
 private:
     glm::vec3 m_Center;
     float m_Radius;
