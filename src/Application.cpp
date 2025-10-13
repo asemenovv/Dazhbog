@@ -2,7 +2,9 @@
 
 #include <QKeyEvent>
 
-Application::Application(int argc, char *argv[]) {
+#include "glm/ext/scalar_constants.hpp"
+
+Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
     m_QtApplication = std::make_unique<QApplication>(argc, argv);
     QApplication::setApplicationName("Dazhbog");
     QApplication::setOrganizationName("Mythological Worlds");
@@ -23,13 +25,33 @@ Application::Application(int argc, char *argv[]) {
 
 int Application::Run() {
     m_QtApplication->installEventFilter(this);
-    return m_QtApplication->exec();
+    SetupScene();
+    return QApplication::exec();
+}
+
+void Application::SetupScene() {
+    m_Scene = std::make_unique<Scene>();
+    constexpr Material pinkyMaterial = {
+        .Albedo = {1.0, 0.0, 1.0}
+    };
+    constexpr Material blueMaterial = {
+        .Albedo = {0.0, 0.0, 1.0}
+    };
+    m_Scene->Add(new Sphere(1.0f, pinkyMaterial, glm::vec3(0.0f, 0.0f, -3.0f)));
+    constexpr float spheresCount = 16.0f;
+    for (int i = 0; i < spheresCount; i++)
+    {
+        float x = std::cos(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        float z = std::sin(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        auto center = glm::vec3(x, 0.0f, z);
+        m_Scene->Add(new Sphere(0.125f, blueMaterial, center));
+    }
 }
 
 void Application::OnRender() {
     QElapsedTimer timer;
     timer.start();
-    m_Renderer->Render(m_Camera.get());
+    m_Renderer->Render(m_Scene.get(), m_Camera.get());
     m_RenderTimeMs = timer.elapsed();
     m_Window->UpdateRenderTime(m_RenderTimeMs);
 
@@ -40,7 +62,8 @@ void Application::OnRender() {
 void Application::OnUpdate(float deltaTime) {
 }
 
-void Application::OnCanvasResize(const int width, const int height) {
+void Application::OnCanvasResize(const int width, const int height) const
+{
     if (m_Renderer) {
         m_Renderer->OnResize(width, height);
         m_Camera->OnResize(width, height);

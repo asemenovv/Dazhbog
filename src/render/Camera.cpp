@@ -6,7 +6,7 @@
 Camera::Camera(const float verticalFOV, const float nearClip, const float farClip, const glm::vec2 viewportSize)
     : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip),
     m_ForwardDirection({0, 0, -1}), m_Position({0, 0, 6}) {
-    OnResize(viewportSize.x, viewportSize.y);
+    OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
 }
 
 void Camera::OnResize(const uint32_t width, const uint32_t height) {

@@ -13,7 +13,7 @@ public:
 
     explicit MainWindow(const ResizeHandler &resizeHandler, QWidget* parent = nullptr);
 
-    void UpdateRenderTime(qint64 renderTime);
+    void UpdateRenderTime(int64_t renderTime);
 
     void ShowImage(const uint32_t* pixels) const;
 

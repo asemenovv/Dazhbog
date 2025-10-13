@@ -1,25 +1,20 @@
 #pragma once
+
 #include <vector>
+#include <memory>
 
-#include "render/Material.h"
-
-struct Model {
-
-};
-
-struct SceneObject {
-    Model model;
-    Material material;
-};
+#include "math/Geometry.h"
 
 class Scene {
 public:
-    Scene() = default;
+    Scene();
     ~Scene() = default;
 
-    void Add(const Model& model, const Material& material);
+    void Add(Sphere* sphere);
 
-    std::vector<SceneObject> GetSceneObjects() const { return m_SceneObjects; }
+    Sphere* FindNearestSphere(const Ray& ray);
+
+    [[nodiscard]] std::vector<std::unique_ptr<Sphere>>& GetSpheres();
 private:
-    std::vector<SceneObject> m_SceneObjects;
+    std::vector<std::unique_ptr<Sphere>> m_Spheres;
 };

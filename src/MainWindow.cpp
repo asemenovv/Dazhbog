@@ -17,7 +17,7 @@ MainWindow::MainWindow(const ResizeHandler &resizeHandler, QWidget* parent) : QM
     statusBar()->showMessage("Ready");
 }
 
-void MainWindow::UpdateRenderTime(qint64 renderTime) {
+void MainWindow::UpdateRenderTime(const int64_t renderTime) {
     m_RenderTimeLabel->setText(QString("Render time: %1 ms").arg(renderTime));
 }
 

@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
         src/Application.cpp
         src/scene/Scene.cpp
         src/render/Material.h
+        src/math/Geometry.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)
