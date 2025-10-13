@@ -5,6 +5,9 @@ struct Ray {
     glm::vec3 Origin;
     glm::vec3 Direction;
 
+    Ray(): Origin(0, 0, 0), Direction(0, 0, -1) {
+    }
+
     explicit Ray(const glm::vec3 &direction, const glm::vec3 &origin = glm::vec3(0.0f))
         : Origin(origin), Direction(glm::normalize(direction)) {
     }

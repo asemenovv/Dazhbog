@@ -4,7 +4,7 @@
 
 class Camera {
 public:
-    Camera(float verticalFOV, float nearClip, float farClip);
+    Camera(float verticalFOV, float nearClip, float farClip, glm::vec2 viewportSize);
 
     void OnResize(uint32_t width, uint32_t height);
 
@@ -13,6 +13,17 @@ public:
     void RecalculateView();
 
     void RecalculateRayDirections();
+
+    const glm::vec3& GetPosition() const { return m_Position; }
+
+    const glm::vec3& GetDirection() const { return m_ForwardDirection; }
+
+    const std::vector<glm::vec3>& GetRayDirections() const { return m_RayDirections; }
+
+    void MoveForward(float stepAmount);
+
+    void MoveRight(float stepAmount);
+
 private:
     glm::mat4 m_Projection{ 1.0f };
     glm::mat4 m_View{ 1.0f };

@@ -14,3 +14,6 @@
 [submodule "deps/stb_image"]
 	path = deps/stb_image
 	url = https://github.com/nothings/stb
+[submodule "deps/entt"]
+	path = deps/entt
+	url = https://github.com/skypjack/entt.git

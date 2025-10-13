@@ -3,9 +3,10 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-Camera::Camera(const float verticalFOV, const float nearClip, const float farClip)
+Camera::Camera(const float verticalFOV, const float nearClip, const float farClip, const glm::vec2 viewportSize)
     : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip),
     m_ForwardDirection({0, 0, -1}), m_Position({0, 0, 6}) {
+    OnResize(viewportSize.x, viewportSize.y);
 }
 
 void Camera::OnResize(const uint32_t width, const uint32_t height) {
@@ -46,4 +47,18 @@ void Camera::RecalculateRayDirections() {
             m_RayDirections[x + y * m_ViewportWidth] = rayDirection;
         }
     }
+}
+
+void Camera::MoveForward(const float stepAmount) {
+    m_Position += m_ForwardDirection * stepAmount;
+    RecalculateRayDirections();
+    RecalculateView();
+}
+
+void Camera::MoveRight(float stepAmount) {
+    constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
+    const glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
+    m_Position += rightDirection * stepAmount;
+    RecalculateRayDirections();
+    RecalculateView();
 }

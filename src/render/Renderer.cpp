@@ -16,15 +16,13 @@ Renderer::Renderer(const glm::vec2 viewportSize): m_Width(0), m_Height(0) {
     OnResize(viewportSize.x, viewportSize.y);
 }
 
-void Renderer::Render() {
+void Renderer::Render(const Camera* camera) {
+    Ray viewRay;
+    viewRay.Origin = camera->GetPosition();
     for (int x = 0; x < m_Width; x++) {
         for (int y = 0; y < m_Height; y++) {
-            glm::vec2 coord = {
-                static_cast<float>(x) / static_cast<float>(m_Width),
-                static_cast<float>(y) / static_cast<float>(m_Height)
-            };
-            coord = coord * 2.0f - 1.0f;
-            const auto color = glm::clamp(this->perPixel(coord), glm::vec4(0.0), glm::vec4(1.0f));
+            viewRay.Direction = camera->GetRayDirections()[x + m_Width * y];
+            const auto color = glm::clamp(this->traceRay(viewRay), glm::vec4(0.0), glm::vec4(1.0f));
             m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(color);
         }
     }
@@ -37,12 +35,11 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     m_ImageData = new std::uint32_t[width * height];
 }
 
-glm::vec4 SPHERE_COLOR = glm::vec4{1.0, 0.0, 1.0, 1.0};
+glm::vec3 SPHERE_COLOR = glm::vec3{1.0, 0.0, 1.0};
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 float AMBIENT = 0.1f;
 
-glm::vec4 Renderer::perPixel(const glm::vec2 coord) {
-    const Ray viewRay({coord.x, coord.y, -1.0f});
+glm::vec4 Renderer::traceRay(const Ray& viewRay) {
     const Sphere sphere(0.5f, glm::vec3(0.0f, 0.0f, -1.0f));
 
     auto sphereIntersections = sphere.Intersects(viewRay);
@@ -51,7 +48,7 @@ glm::vec4 Renderer::perPixel(const glm::vec2 coord) {
         float diffuseIntensity = std::max(glm::dot(normal, -LIGHT_DIRECTION), 0.0f);
         auto ambient = AMBIENT * SPHERE_COLOR;
         auto diffuse = diffuseIntensity * SPHERE_COLOR;
-        return ambient + diffuse;
+        return glm::vec4(ambient + diffuse, 1.0f);
     }
     return {0.0, 0.0, 0.0, 1.0};
 }

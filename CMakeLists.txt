@@ -17,6 +17,8 @@ add_executable(${PROJECT_NAME}
         src/render/Renderer.cpp
         src/render/Camera.cpp
         src/Application.cpp
+        src/scene/Scene.cpp
+        src/render/Material.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)
