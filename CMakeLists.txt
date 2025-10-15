@@ -20,6 +20,8 @@ add_executable(${PROJECT_NAME}
         src/scene/Scene.cpp
         src/render/Material.h
         src/math/Geometry.cpp
+        src/wallnut/Random.cpp
+        src/wallnut/Random.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

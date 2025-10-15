@@ -35,13 +35,13 @@ struct ModelIntersections
 
 class Sphere {
 public:
-    explicit Sphere(float radius, Material material = {}, const glm::vec3 &center = glm::vec3(0.0f));
+    explicit Sphere(float radius, uint32_t materialIndex = 0, const glm::vec3 &center = glm::vec3(0.0f));
 
     [[nodiscard]] ModelIntersections Intersects(const Ray &ray) const;
 
     [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const;
 
-    Material& GetMaterial() { return m_Material; }
+    uint32_t GetMaterialIndex() const { return m_MaterialIndex; }
 
     [[nodiscard]] glm::vec4 GetCenter() const { return {m_Center, 1.0f}; };
 
@@ -49,5 +49,5 @@ public:
 private:
     glm::vec3 m_Center;
     float m_Radius;
-    Material m_Material;
+    uint32_t m_MaterialIndex;
 };

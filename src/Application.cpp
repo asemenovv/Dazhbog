@@ -32,20 +32,23 @@ int Application::Run() {
 
 void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
-    constexpr Material pinkyMaterial = {
-        .Albedo = {1.0, 0.0, 1.0}
-    };
-    constexpr Material blueMaterial = {
-        .Albedo = {0.0, 0.0, 1.0}
-    };
-    m_Scene->Add(new Sphere(0.5f, pinkyMaterial, glm::vec3(0.0f, 0.0f, 0.0f)));
-    constexpr int spheresCount = 4;
+    m_Scene->Add(new Material({ // Blue Floor 1
+        .Albedo = {0.2, 0.3, 1.0},
+        .Roughness = 0.1f
+    }));
+    m_Scene->Add(new Material({ // Pinky Sphere 2
+        .Albedo = {1.0, 0.0, 1.0},
+        .Roughness = 0.0f
+    }));
+    m_Scene->Add(new Sphere(1000.0f, 1, glm::vec3(0.0f, -1000.3f, 0.0f)));
+    m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 1.7f, 0.0f)));
+    constexpr int spheresCount = 8;
     for (int i = 0; i < spheresCount; i++)
     {
-        const float x = 2.0f * std::cos(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
-        const float z = 2.0f * std::sin(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        const float x = 5.0f * std::cos(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
+        const float z = 5.0f * std::sin(2.0f * glm::pi<float>() * static_cast<float>(i) / spheresCount);
         auto center = glm::vec3(x, 0.0f, z);
-        m_Scene->Add(new Sphere(0.125f, blueMaterial, center));
+        // m_Scene->Add(new Sphere(0.125f, spheresMaterial, center));
     }
 }
 
@@ -83,7 +86,7 @@ void Application::OnCanvasResize(const int width, const int height) const
     }
 }
 
-float CAMERA_SPEED = 0.2f;
+float CAMERA_SPEED = 0.02f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::KeyPress) {

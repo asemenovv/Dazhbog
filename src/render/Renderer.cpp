@@ -2,6 +2,7 @@
 
 #include "math/Geometry.h"
 #include "scene/Scene.h"
+#include "wallnut/Random.h"
 
 namespace Utils {
     static uint32_t Vec4ToRGBA8(const glm::vec4 color) {
@@ -37,6 +38,7 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 }
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
 float AMBIENT = 0.1f;
 
 glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
@@ -44,16 +46,34 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
     Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
-    const HitPayload payload = traceRay(ray);
 
-    if (payload.HitDistance < 0.0f)
-        return {0.0f, 0.0f, 0.0f, 1.0f};
+    glm::vec3 color(0.0f);
+    float MULTIPLIER = 1.0f;
 
-    Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
-    const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
-    const auto ambient = AMBIENT * sphere->GetMaterial().Albedo;
-    const auto diffuse = diffuseIntensity * sphere->GetMaterial().Albedo;
-    return {ambient + diffuse, 1.0f};
+    constexpr int BOUNCES = 5;
+    for (int i = 0; i < BOUNCES; i++) {
+        const HitPayload payload = traceRay(ray);
+        if (payload.HitDistance < 0.0f) {
+            color += SKY_COLOR * MULTIPLIER;
+            break;
+        }
+
+        Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
+        Material* material = m_ActiveScene->GetMaterials()[sphere->GetMaterialIndex()].get();
+        const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
+        const auto ambient = AMBIENT * material->Albedo;
+        const auto diffuse = diffuseIntensity * material->Albedo;
+        const auto sphereColor = diffuse;
+        color += MULTIPLIER * sphereColor;
+        MULTIPLIER *= 0.5f;
+
+        ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+        ray.Direction = glm::reflect(
+            ray.Direction,
+            payload.WorldNormal + material->Roughness * Walnut::Random::Vec3(-0.5f, 0.5f)
+        );
+    }
+    return {color, 1.0f};
 }
 
 Renderer::HitPayload Renderer::traceRay(const Ray& ray)
@@ -65,7 +85,7 @@ Renderer::HitPayload Renderer::traceRay(const Ray& ray)
         const ModelIntersections intersects = sphere->Intersects(ray);
         if (intersects.NumberOfIntersections == 0)
             continue;
-        if (intersects.DistanceToNearest < hitDistance) {
+        if (intersects.DistanceToNearest > 0.0f && intersects.DistanceToNearest < hitDistance) {
             closestSphereIndex = i;
             hitDistance = intersects.DistanceToNearest;
         }

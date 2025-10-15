@@ -1,7 +1,7 @@
 #include "Geometry.h"
 
-Sphere::Sphere(const float radius, const Material material, const glm::vec3& center)
-    : m_Center(center), m_Radius(radius), m_Material(material) {
+Sphere::Sphere(const float radius, const uint32_t materialIndex, const glm::vec3& center)
+    : m_Center(center), m_Radius(radius), m_MaterialIndex(materialIndex) {
 }
 
 ModelIntersections Sphere::Intersects(const Ray& ray) const {
@@ -13,7 +13,7 @@ ModelIntersections Sphere::Intersects(const Ray& ray) const {
         - m_Radius * m_Radius;
 
     // D = b^2 - 4ac
-    const float discriminant = (b * b) - 4 * a * c;
+    const float discriminant = b * b - 4 * a * c;
     if (discriminant < 0) {
         return ModelIntersections(0);
     }
