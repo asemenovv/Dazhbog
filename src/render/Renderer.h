@@ -9,16 +9,32 @@
 
 class Renderer {
 public:
-    explicit Renderer(glm::vec2 viewportSize);
+    explicit Renderer(Camera* activeCamera, Scene* activeScene, glm::vec2 viewportSize);
 
-    void Render(Scene* scene, const Camera* camera);
+    void Render();
 
     void OnResize(uint32_t width, uint32_t height);
 
     [[nodiscard]] std::uint32_t* GetFinalImageData() const { return m_ImageData; }
 private:
-    glm::vec4 traceRay(Scene* scene, const Ray& viewRay);
+    struct HitPayload
+    {
+        float HitDistance;
+        glm::vec3 WorldPosition;
+        glm::vec3 WorldNormal;
+
+        uint32_t ObjectIndex;
+    };
+
+    glm::vec4 perPixel(); // like RayGen shader
+
+    HitPayload traceRay(const Ray& viewRay);
+    HitPayload closestHit(const Ray& ray, float hitDistance, uint32_t objectIndex); // like ClosestHit shader
+    HitPayload missHit(const Ray& ray); //like Miss shader
 
     std::uint32_t*  m_ImageData;
     uint32_t m_Width, m_Height;
+
+    Camera* m_ActiveCamera;
+    Scene* m_ActiveScene;
 };

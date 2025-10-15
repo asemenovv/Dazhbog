@@ -13,17 +13,21 @@ namespace Utils {
     }
 }
 
-Renderer::Renderer(const glm::vec2 viewportSize): m_ImageData(nullptr), m_Width(0), m_Height(0) {
+Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
+    : m_ImageData(nullptr), m_Width(0), m_Height(0), m_ActiveCamera(activeCamera), m_ActiveScene(activeScene) {
     OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
 }
 
-void Renderer::Render(Scene* scene, const Camera* camera) {
+void Renderer::Render() {
     Ray viewRay;
-    viewRay.Origin = camera->GetPosition();
-    for (int x = 0; x < m_Width; x++) {
-        for (int y = 0; y < m_Height; y++) {
-            viewRay.Direction = camera->GetRayDirections()[x + m_Width * y];
-            const auto color = glm::clamp(this->traceRay(scene, viewRay), glm::vec4(0.0), glm::vec4(1.0f));
+    viewRay.Origin = m_ActiveCamera->GetPosition();
+    viewRay.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
+    for (int x = 0; x < m_Width; x++)
+    {
+        for (int y = 0; y < m_Height; y++)
+        {
+            perPixel();
+            const auto color = glm::clamp(this->traceRay(viewRay), glm::vec4(0.0), glm::vec4(1.0f));
             m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(color);
         }
     }
@@ -39,8 +43,13 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 float AMBIENT = 0.1f;
 
-glm::vec4 Renderer::traceRay(Scene* scene, const Ray& viewRay) {
-    if (Sphere* nearestSphere = scene->FindNearestSphere(viewRay); nearestSphere != nullptr)
+glm::vec4 Renderer::perPixel()
+{
+}
+
+Renderer::HitPayload Renderer::traceRay(const Ray& viewRay)
+{
+    if (Sphere* nearestSphere = m_ActiveScene->FindNearestSphere(viewRay); nearestSphere != nullptr)
     {
         const auto intersection = nearestSphere->Intersects(viewRay);
         const auto normal = nearestSphere->NormalAtPoint(intersection.FirstIntersection);
@@ -50,4 +59,12 @@ glm::vec4 Renderer::traceRay(Scene* scene, const Ray& viewRay) {
         return {ambient + diffuse, 1.0f};
     }
     return {0.0, 0.0, 0.0, 1.0};
+}
+
+Renderer::HitPayload Renderer::closestHit(const Ray& ray, float hitDistance, uint32_t objectIndex)
+{
+}
+
+Renderer::HitPayload Renderer::missHit(const Ray& ray)
+{
 }

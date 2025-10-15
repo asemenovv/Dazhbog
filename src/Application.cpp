@@ -20,13 +20,13 @@ Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
     connect(m_RenderTimer.get(), &QTimer::timeout, this, &Application::OnRender);
     m_RenderTimer->start();
 
-    m_Renderer = std::make_unique<Renderer>(m_Window->GetCanvasSize());
     m_Camera = std::make_unique<Camera>(45.0, 0.1, 100.0, m_Window->GetCanvasSize());
+    SetupScene();
+    m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
 }
 
 int Application::Run() {
     m_QtApplication->installEventFilter(this);
-    SetupScene();
     return QApplication::exec();
 }
 
@@ -52,7 +52,7 @@ void Application::SetupScene() {
 void Application::OnRender() {
     QElapsedTimer timer;
     timer.start();
-    m_Renderer->Render(m_Scene.get(), m_Camera.get());
+    m_Renderer->Render();
     m_RenderTimeMs = timer.elapsed();
     m_Window->UpdateRenderTime(m_RenderTimeMs);
 
