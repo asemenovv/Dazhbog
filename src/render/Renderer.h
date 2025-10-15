@@ -26,10 +26,10 @@ private:
         uint32_t ObjectIndex;
     };
 
-    glm::vec4 perPixel(); // like RayGen shader
+    glm::vec4 perPixel(uint32_t x, uint32_t y); // like RayGen shader
 
-    HitPayload traceRay(const Ray& viewRay);
-    HitPayload closestHit(const Ray& ray, float hitDistance, uint32_t objectIndex); // like ClosestHit shader
+    HitPayload traceRay(const Ray& ray);
+    HitPayload closestHit(const Ray& ray, float hitDistance, uint32_t objectIndex) const; // like ClosestHit shader
     HitPayload missHit(const Ray& ray); //like Miss shader
 
     std::uint32_t*  m_ImageData;
