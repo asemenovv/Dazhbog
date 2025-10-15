@@ -20,21 +20,40 @@ Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 vie
 }
 
 void Renderer::Render() {
+    if (m_FrameIndex == 1) {
+        memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
+    }
     for (int x = 0; x < m_Width; x++)
     {
         for (int y = 0; y < m_Height; y++)
         {
-            const auto color = glm::clamp(perPixel(x, y), glm::vec4(0.0), glm::vec4(1.0f));
-            m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(color);
+            glm::vec4 color = perPixel(x, y);
+            m_AccumulationData[x + y * m_Width] += color;
+
+            glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_Width];
+            accumulatedColor /= static_cast<float>(m_FrameIndex);
+
+            accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0), glm::vec4(1.0f));
+            m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
         }
+    }
+
+    if (m_Settings.Accumulate) {
+        m_FrameIndex++;
+    } else {
+        m_FrameIndex = 1;
     }
 }
 
 void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     m_Width = width;
     m_Height = height;
+
     delete[] m_ImageData;
     m_ImageData = new std::uint32_t[width * height];
+
+    delete[] m_AccumulationData;
+    m_AccumulationData = new glm::vec4[width * height];
 }
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));

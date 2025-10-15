@@ -38,7 +38,7 @@ void Application::SetupScene() {
     }));
     m_Scene->Add(new Material({ // Pinky Sphere 2
         .Albedo = {1.0, 0.0, 1.0},
-        .Roughness = 0.0f
+        .Roughness = 1.0f
     }));
     m_Scene->Add(new Sphere(1000.0f, 1, glm::vec3(0.0f, -1000.3f, 0.0f)));
     m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 1.7f, 0.0f)));
@@ -89,19 +89,27 @@ void Application::OnCanvasResize(const int width, const int height) const
 float CAMERA_SPEED = 0.02f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
+    bool cameraMoved = false;
     if (event->type() == QEvent::KeyPress) {
         const auto* keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_W) {
             m_Camera->MoveForward(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
         }
         else if (keyEvent->key() == Qt::Key_S) {
             m_Camera->MoveForward(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
         }
         else if (keyEvent->key() == Qt::Key_D) {
             m_Camera->MoveRight(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
         }
         else if (keyEvent->key() == Qt::Key_A) {
             m_Camera->MoveRight(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (cameraMoved) {
+            m_Renderer->ResetFrameIndex();
         }
         return false;
     }
