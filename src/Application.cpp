@@ -38,10 +38,19 @@ void Application::SetupScene() {
     }));
     m_Scene->Add(new Material({ // Pinky Sphere 2
         .Albedo = {1.0, 0.0, 1.0},
-        .Roughness = 1.0f
+        .Roughness = 1.0f,
+        .EmissionColor = {0.0, 1.0, 0.0},
+        .EmissionPower = 0.0f
+    }));
+    m_Scene->Add(new Material({ // Emissive Sphere 3
+        .Albedo = {0.8, 0.5, 0.2},
+        .Roughness = 0.1f,
+        .EmissionColor = {0.8, 0.5, 0.2},
+        .EmissionPower = 20.0f
     }));
     m_Scene->Add(new Sphere(1000.0f, 1, glm::vec3(0.0f, -1000.3f, 0.0f)));
     m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 1.7f, 0.0f)));
+    m_Scene->Add(new Sphere(10.0f, 3, glm::vec3(30.0f, 20.0f, -20.0f)));
     constexpr int spheresCount = 8;
     for (int i = 0; i < spheresCount; i++)
     {
@@ -67,7 +76,7 @@ void Application::OnRender() {
 float ROTATION_SPEED = 0.05f;
 
 void Application::OnUpdate(const float deltaTime) {
-    for (const std::unique_ptr<Sphere>& sphere : m_Scene->GetSpheres())
+    /*for (const std::unique_ptr<Sphere>& sphere : m_Scene->GetSpheres())
     {
         auto rotation = glm::rotate(
             glm::mat4{1.0f},
@@ -75,7 +84,7 @@ void Application::OnUpdate(const float deltaTime) {
             glm::vec3(0.0f, 1.0f, 0.0f)
         );
         sphere->MoveTo(glm::vec3(rotation * sphere->GetCenter()));
-    }
+    }*/
 }
 
 void Application::OnCanvasResize(const int width, const int height) const
@@ -86,7 +95,7 @@ void Application::OnCanvasResize(const int width, const int height) const
     }
 }
 
-float CAMERA_SPEED = 0.02f;
+float CAMERA_SPEED = 0.005f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::KeyPress) {

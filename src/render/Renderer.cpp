@@ -14,6 +14,25 @@ namespace Utils {
         const auto a = static_cast<uint8_t>(color.a * 255.0f);
         return a << 24 | b << 16 | g << 8 | r;
     }
+
+    static uint32_t PCG_Hash(const uint32_t input) {
+        const uint32_t state = input * 747796405u + 2891336453u;
+        const uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) + 277803737u;
+        return (word >> 22u) ^ word;
+    }
+
+    static float RandomFloat(uint32_t& seed) {
+        seed = PCG_Hash(seed);
+        return static_cast<float>(seed) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    }
+
+    static glm::vec3 InUnitSphere(uint32_t& seed) {
+        return glm::normalize(glm::vec3(
+            RandomFloat(seed) * 2.0 - 1.0,
+            RandomFloat(seed) * 2.0 - 1.0,
+            RandomFloat(seed) * 2.0 - 1.0
+        ));
+    }
 }
 
 Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
@@ -76,7 +95,7 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 }
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
+glm::vec3 SKY_COLOR(0.3f, 0.35f, 0.45f);
 float AMBIENT = 0.1f;
 
 glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
@@ -85,32 +104,40 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
 
-    glm::vec3 color(0.0f);
-    float MULTIPLIER = 1.0f;
+    glm::vec3 light(0.0f);
+    glm::vec3 contribution(1.0f);
+
+    uint32_t seed = x + m_Width * y;
+    seed *= m_FrameIndex;
 
     constexpr int BOUNCES = 5;
     for (int i = 0; i < BOUNCES; i++) {
+        seed += i;
+
         const HitPayload payload = traceRay(ray);
         if (payload.HitDistance < 0.0f) {
-            color += SKY_COLOR * MULTIPLIER;
+            // light += SKY_COLOR * contribution;
             break;
         }
 
         Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
         Material* material = m_ActiveScene->GetMaterials()[sphere->GetMaterialIndex()].get();
-        const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
-        const auto diffuse = diffuseIntensity * material->Albedo;
-        const auto sphereColor = diffuse;
-        color += MULTIPLIER * sphereColor;
-        MULTIPLIER *= 0.5f;
+        // const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
+        // const auto diffuse = diffuseIntensity * material->Albedo;
+        // const auto ambient = AMBIENT * material->Albedo;
+        // const auto sphereColor = diffuse + ambient;
+        // light += contribution * material->Albedo;
+        contribution *= material->Albedo;
+        light += material->GetEmission();
 
         ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-        ray.Direction = glm::reflect(
-            ray.Direction,
-            payload.WorldNormal + material->Roughness * Walnut::Random::Vec3(-0.5f, 0.5f)
-        );
+        // ray.Direction = glm::reflect(
+            // ray.Direction,
+            // payload.WorldNormal + material->Roughness * Walnut::Random::Vec3(-0.5f, 0.5f)
+        // );
+        ray.Direction = glm::normalize(Utils::InUnitSphere(seed) + payload.WorldNormal);
     }
-    return {color, 1.0f};
+    return {light, 1.0f};
 }
 
 Renderer::HitPayload Renderer::traceRay(const Ray& ray)
