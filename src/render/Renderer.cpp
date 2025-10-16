@@ -4,6 +4,8 @@
 #include "scene/Scene.h"
 #include "wallnut/Random.h"
 
+#include <tbb/parallel_for.h>
+
 namespace Utils {
     static uint32_t Vec4ToRGBA8(const glm::vec4 color) {
         const auto r = static_cast<uint8_t>(color.r * 255.0f);
@@ -23,11 +25,27 @@ void Renderer::Render() {
     if (m_FrameIndex == 1) {
         memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
     }
-    for (int x = 0; x < m_Width; x++)
-    {
-        for (int y = 0; y < m_Height; y++)
+#define MT 1
+#if MT
+    tbb::parallel_for<int>(0, m_Height, 1, [this](int y) {
+        for (int x = 0; x < m_Width; x++)
         {
-            glm::vec4 color = perPixel(x, y);
+            const glm::vec4 color = perPixel(x, y);
+            m_AccumulationData[x + y * m_Width] += color;
+
+            glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_Width];
+            accumulatedColor /= static_cast<float>(m_FrameIndex);
+
+            accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0), glm::vec4(1.0f));
+            m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
+        }
+    });
+#else
+    for (int y = 0; y < m_Height; y++)
+    {
+        for (int x = 0; x < m_Width; x++)
+        {
+            const glm::vec4 color = perPixel(x, y);
             m_AccumulationData[x + y * m_Width] += color;
 
             glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_Width];
@@ -37,6 +55,7 @@ void Renderer::Render() {
             m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
         }
     }
+#endif
 
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
@@ -80,7 +99,6 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
         Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
         Material* material = m_ActiveScene->GetMaterials()[sphere->GetMaterialIndex()].get();
         const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
-        const auto ambient = AMBIENT * material->Albedo;
         const auto diffuse = diffuseIntensity * material->Albedo;
         const auto sphereColor = diffuse;
         color += MULTIPLIER * sphereColor;

@@ -5,6 +5,7 @@ Sphere::Sphere(const float radius, const uint32_t materialIndex, const glm::vec3
 }
 
 ModelIntersections Sphere::Intersects(const Ray& ray) const {
+    constexpr float eps = 1e-6f;
     const float a = glm::dot(ray.Direction, ray.Direction);
     const float b = 2.0f * (glm::dot(ray.Origin, ray.Direction) - glm::dot(ray.Direction, m_Center));
     const float c = glm::dot(ray.Origin, ray.Origin)
@@ -17,11 +18,12 @@ ModelIntersections Sphere::Intersects(const Ray& ray) const {
     if (discriminant < 0) {
         return ModelIntersections(0);
     }
-    const float t1 = (-b - sqrt(discriminant)) / (2 * a);
-    if (discriminant == 0) {
+    const float sqrtDiscr = sqrt(discriminant);
+    const float t1 = (-b - sqrtDiscr) / (2 * a);
+    if (discriminant <= eps) {
         return ModelIntersections(1, ray.PointAt(t1), glm::dvec3(0.0), t1);
     }
-    const float t2 = (-b + sqrt(discriminant)) / (2 * a);
+    const float t2 = (-b + sqrtDiscr) / (2 * a);
     return ModelIntersections(2, ray.PointAt(t1), ray.PointAt(t2), std::min(t1, t2));
 }
 

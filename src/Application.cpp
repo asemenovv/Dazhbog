@@ -89,10 +89,9 @@ void Application::OnCanvasResize(const int width, const int height) const
 float CAMERA_SPEED = 0.02f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
-    bool cameraMoved = false;
     if (event->type() == QEvent::KeyPress) {
-        const auto* keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_W) {
+        bool cameraMoved = false;
+        if (const auto* keyEvent = static_cast<QKeyEvent*>(event); keyEvent->key() == Qt::Key_W) {
             m_Camera->MoveForward(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
             cameraMoved = true;
         }

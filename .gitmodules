@@ -17,3 +17,9 @@
 [submodule "deps/entt"]
 	path = deps/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "deps/taskflow"]
+	path = deps/taskflow
+	url = https://github.com/taskflow/taskflow.git
+[submodule "deps/oneTBB"]
+	path = deps/oneTBB
+	url = https://github.com/oneapi-src/oneTBB.git
