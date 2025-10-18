@@ -5,8 +5,15 @@
 
 Camera::Camera(const float verticalFOV, const float nearClip, const float farClip, const glm::vec2 viewportSize)
     : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip),
-    m_ForwardDirection({0, -5, -15}), m_Position({0, 5, 15}) {
+    m_ForwardDirection({0, 0, -1 }), m_Position({0, 0, 0}) {
     OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
+}
+
+void Camera::PlaceInWorld(const glm::vec3& position, const glm::vec3& direction)
+{
+    m_Position = position;
+    m_ForwardDirection = direction;
+    Refresh();
 }
 
 void Camera::OnResize(const uint32_t width, const uint32_t height) {
@@ -16,8 +23,7 @@ void Camera::OnResize(const uint32_t width, const uint32_t height) {
     m_ViewportWidth = width;
     m_ViewportHeight = height;
 
-    RecalculateProjection();
-    RecalculateRayDirections();
+    Refresh();
 }
 
 void Camera::RecalculateProjection() {
@@ -51,14 +57,36 @@ void Camera::RecalculateRayDirections() {
 
 void Camera::MoveForward(const float stepAmount) {
     m_Position += m_ForwardDirection * stepAmount;
-    RecalculateRayDirections();
-    RecalculateView();
 }
 
-void Camera::MoveRight(float stepAmount) {
+void Camera::MoveRight(const float stepAmount) {
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
     const glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
     m_Position += rightDirection * stepAmount;
+}
+
+void Camera::MoveUp(const float stepAmount)
+{
+    constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
+    m_Position += upDirection * stepAmount;
+}
+
+void Camera::Pitch(const float angle)
+{
+    constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
+    const glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
+    const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, rightDirection);
+    m_ForwardDirection = glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f));
+}
+
+void Camera::Yaw(const float angle)
+{
+    const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 1, 0));
+    m_ForwardDirection = glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f));
+}
+
+void Camera::Refresh()
+{
     RecalculateRayDirections();
     RecalculateView();
 }

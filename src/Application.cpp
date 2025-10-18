@@ -21,6 +21,7 @@ Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
     m_RenderTimer->start();
 
     m_Camera = std::make_unique<Camera>(45.0, 0.1, 100.0, m_Window->GetCanvasSize());
+    m_Camera->PlaceInWorld({0.0, 5.0, 15.0}, {0.0, 0.0, 1.0});
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
 }
@@ -95,28 +96,54 @@ void Application::OnCanvasResize(const int width, const int height) const
     }
 }
 
-float CAMERA_SPEED = 0.005f;
+float CAMERA_SPEED = 0.02f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::KeyPress) {
         bool cameraMoved = false;
-        if (const auto* keyEvent = static_cast<QKeyEvent*>(event); keyEvent->key() == Qt::Key_W) {
+        const auto* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_S) {
             m_Camera->MoveForward(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
             cameraMoved = true;
         }
-        else if (keyEvent->key() == Qt::Key_S) {
+        if (keyEvent->key() == Qt::Key_W) {
             m_Camera->MoveForward(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
             cameraMoved = true;
         }
-        else if (keyEvent->key() == Qt::Key_D) {
+        if (keyEvent->key() == Qt::Key_D) {
             m_Camera->MoveRight(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
             cameraMoved = true;
         }
-        else if (keyEvent->key() == Qt::Key_A) {
+        if (keyEvent->key() == Qt::Key_A) {
             m_Camera->MoveRight(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
             cameraMoved = true;
         }
+        if (keyEvent->key() == Qt::Key_E) {
+            m_Camera->MoveUp(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (keyEvent->key() == Qt::Key_Q) {
+            m_Camera->MoveUp(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (keyEvent->key() == Qt::Key_Right) {
+            m_Camera->Yaw(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (keyEvent->key() == Qt::Key_Left) {
+            m_Camera->Yaw(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (keyEvent->key() == Qt::Key_Up) {
+            m_Camera->Pitch(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
+        if (keyEvent->key() == Qt::Key_Down) {
+            m_Camera->Pitch(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
+            cameraMoved = true;
+        }
         if (cameraMoved) {
+            m_Camera->Refresh();
             m_Renderer->ResetFrameIndex();
         }
         return false;

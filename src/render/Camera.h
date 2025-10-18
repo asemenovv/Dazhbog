@@ -6,6 +6,8 @@ class Camera {
 public:
     Camera(float verticalFOV, float nearClip, float farClip, glm::vec2 viewportSize);
 
+    void PlaceInWorld(const glm::vec3& position, const glm::vec3& direction);
+
     void OnResize(uint32_t width, uint32_t height);
 
     void RecalculateProjection();
@@ -23,6 +25,14 @@ public:
     void MoveForward(float stepAmount);
 
     void MoveRight(float stepAmount);
+
+    void MoveUp(float stepAmount);
+
+    void Pitch(float angle);
+
+    void Yaw(float angle);
+
+    void Refresh();
 
 private:
     glm::mat4 m_Projection{ 1.0f };

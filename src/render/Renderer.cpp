@@ -95,7 +95,8 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 }
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-glm::vec3 SKY_COLOR(0.3f, 0.35f, 0.45f);
+glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
+float SKY_BRIGHTNESS = 1.0f;
 float AMBIENT = 0.1f;
 
 glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
@@ -104,8 +105,8 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
 
-    glm::vec3 light(0.0f);
-    glm::vec3 contribution(1.0f);
+    glm::vec3 rayColor(1.0f);
+    glm::vec3 brightnessScore(0.0f);
 
     uint32_t seed = x + m_Width * y;
     seed *= m_FrameIndex;
@@ -116,7 +117,7 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
 
         const HitPayload payload = traceRay(ray);
         if (payload.HitDistance < 0.0f) {
-            // light += SKY_COLOR * contribution;
+            brightnessScore += SKY_BRIGHTNESS * SKY_COLOR * rayColor;
             break;
         }
 
@@ -127,8 +128,8 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
         // const auto ambient = AMBIENT * material->Albedo;
         // const auto sphereColor = diffuse + ambient;
         // light += contribution * material->Albedo;
-        contribution *= material->Albedo;
-        light += material->GetEmission();
+        brightnessScore += material->GetEmission() * rayColor;
+        rayColor *= material->Albedo;
 
         ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
         // ray.Direction = glm::reflect(
@@ -137,7 +138,7 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
         // );
         ray.Direction = glm::normalize(Utils::InUnitSphere(seed) + payload.WorldNormal);
     }
-    return {light, 1.0f};
+    return {brightnessScore, 1.0f};
 }
 
 Renderer::HitPayload Renderer::traceRay(const Ray& ray)
