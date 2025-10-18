@@ -6,7 +6,7 @@ Sphere::Sphere(const float radius, const uint32_t materialIndex, const glm::vec3
     : m_Center(center), m_Radius(radius), m_MaterialIndex(materialIndex) {
 }
 
-ModelIntersections Sphere::Hit(const Ray &ray) const {
+HitPayload Sphere::Hit(const Ray &ray, float tMin, float tMax) const {
     // see https://raytracing.github.io/books/RayTracingInOneWeekend.html#surfacenormalsandmultipleobjects/simplifyingtheray-sphereintersectioncode
     const glm::vec3 oc = m_Center - ray.Origin;
     const float a = glm::length2(ray.Direction);
@@ -15,19 +15,28 @@ ModelIntersections Sphere::Hit(const Ray &ray) const {
 
     const float discriminant = h * h - a * c;
     if (discriminant < 0) {
-        return ModelIntersections(0);
+        return {.IsHit = false};
     }
+
     const float sqrtDiscr = sqrt(discriminant);
-    const float t1 = (h - sqrtDiscr) / a;
-    if (discriminant <= 1e-6f) {
-        return ModelIntersections(1, ray.PointAt(t1), glm::dvec3(0.0), t1);
+
+    auto root = (h - sqrtDiscr) / a;
+    if (root <= tMin || root >= tMax) {
+        root = (h + sqrtDiscr) / a;
+        if (root <= tMin || root >= tMax)
+            return {.IsHit = false};
     }
-    const float t2 = (h + sqrtDiscr) / a;
-    return ModelIntersections(2, ray.PointAt(t1), ray.PointAt(t2), std::min(t1, t2));
+
+    HitPayload hitRecord{};
+    hitRecord.IsHit = true;
+    hitRecord.HitDistance = root;
+    hitRecord.WorldPosition = ray.PointAt(root);
+    hitRecord.WorldNormal = NormalAtPoint(hitRecord.WorldPosition);
+    return hitRecord;
 }
 
 glm::vec3 Sphere::NormalAtPoint(const glm::vec3 &point) const {
-    return glm::normalize(point - m_Center);
+    return (point - m_Center) / m_Radius;
 }
 
 void Sphere::MoveTo(const glm::vec3 &point) {

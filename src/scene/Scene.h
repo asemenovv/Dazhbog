@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "math/Geometry.h"
+#include "render/Material.h"
 
 class Scene {
 public:

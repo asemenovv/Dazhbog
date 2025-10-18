@@ -25,20 +25,9 @@ public:
 
     Settings GetSettings() const { return m_Settings; }
 private:
-    struct HitPayload
-    {
-        float HitDistance;
-        glm::vec3 WorldPosition;
-        glm::vec3 WorldNormal;
-
-        uint32_t ObjectIndex;
-    };
-
     glm::vec4 perPixel(uint32_t x, uint32_t y); // like RayGen shader
 
-    HitPayload traceRay(const Ray& ray);
-    HitPayload closestHit(const Ray& ray, float hitDistance, uint32_t objectIndex) const; // like ClosestHit shader
-    HitPayload missHit(const Ray& ray); //like Miss shader
+    HitPayload traceRay(const Ray& ray) const;
 
     Settings m_Settings;
 

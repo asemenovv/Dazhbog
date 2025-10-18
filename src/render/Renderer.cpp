@@ -6,6 +6,8 @@
 
 #include <tbb/parallel_for.h>
 
+#include "Material.h"
+
 namespace Utils {
     static uint32_t Vec4ToRGBA8(const glm::vec4 color) {
         const auto r = static_cast<uint8_t>(color.r * 255.0f);
@@ -101,66 +103,36 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
         seed += i;
 
         const HitPayload payload = traceRay(ray);
-        if (payload.HitDistance < 0.0f) {
+        if (!payload.IsHit) {
             brightnessScore += SKY_BRIGHTNESS * SKY_COLOR * rayColor;
             break;
         }
 
         Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
         Material* material = m_ActiveScene->GetMaterials()[sphere->GetMaterialIndex()].get();
-        // const float diffuseIntensity = std::max(glm::dot(payload.WorldNormal, -LIGHT_DIRECTION), 0.0f);
-        // const auto diffuse = diffuseIntensity * material->Albedo;
-        // const auto ambient = AMBIENT * material->Albedo;
-        // const auto sphereColor = diffuse + ambient;
-        // light += contribution * material->Albedo;
+
         brightnessScore += material->GetEmission() * rayColor;
         rayColor *= material->Albedo;
 
         ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-        // ray.Direction = glm::reflect(
-            // ray.Direction,
-            // payload.WorldNormal + material->Roughness * Walnut::Random::Vec3(-0.5f, 0.5f)
-        // );
         ray.Direction = glm::normalize(Utils::InUnitSphere(seed) + payload.WorldNormal);
     }
     return {brightnessScore, 1.0f};
 }
 
-Renderer::HitPayload Renderer::traceRay(const Ray& ray)
-{
-    int closestSphereIndex = -1;
-    float hitDistance = std::numeric_limits<float>::max();
+HitPayload Renderer::traceRay(const Ray& ray) const {
+    float distanceToCurrentObject = std::numeric_limits<float>::max();
+    HitPayload nearestHitPayload = {.IsHit = false};
     for (int i = 0; i < m_ActiveScene->GetSpheres().size(); i++) {
         const Sphere* sphere = m_ActiveScene->GetSpheres()[i].get();
-        const ModelIntersections intersects = sphere->Hit(ray);
-        if (intersects.NumberOfIntersections == 0)
+        const HitPayload payload = sphere->Hit(ray, 0, std::numeric_limits<float>::max());
+        if (!payload.IsHit)
             continue;
-        if (intersects.DistanceToNearest > 0.0f && intersects.DistanceToNearest < hitDistance) {
-            closestSphereIndex = i;
-            hitDistance = intersects.DistanceToNearest;
+        if (payload.HitDistance < distanceToCurrentObject) {
+            nearestHitPayload = payload;
+            nearestHitPayload.ObjectIndex = i;
+            distanceToCurrentObject = payload.HitDistance;
         }
     }
-    if (closestSphereIndex < 0)
-        return missHit(ray);
-
-    return closestHit(ray, hitDistance, closestSphereIndex);
-}
-
-Renderer::HitPayload Renderer::closestHit(const Ray& ray, const float hitDistance, const uint32_t objectIndex) const {
-    HitPayload payload;
-    payload.HitDistance = hitDistance;
-    payload.ObjectIndex = objectIndex;
-
-    Sphere* closestSphere = m_ActiveScene->GetSpheres()[objectIndex].get();
-    const auto intersection = closestSphere->Hit(ray);
-    payload.WorldPosition = intersection.FirstIntersection;
-    payload.WorldNormal = closestSphere->NormalAtPoint(intersection.FirstIntersection);
-    return payload;
-}
-
-Renderer::HitPayload Renderer::missHit(const Ray& ray)
-{
-    HitPayload payload = {};
-    payload.HitDistance = -1.0f;
-    return payload;
+    return nearestHitPayload;
 }
