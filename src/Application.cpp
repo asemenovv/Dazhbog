@@ -48,10 +48,11 @@ void Application::SetupScene() {
         .Albedo = {0.8, 0.5, 0.2},
         .Roughness = 0.1f,
         .EmissionColor = {0.8, 0.5, 0.2},
-        .EmissionPower = 20.0f
+        .EmissionPower = 10.0f
     }));
-    m_Scene->Add(new Sphere(1000.0f, 1, glm::vec3(0.0f, -1000.3f, 0.0f)));
-    m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 1.7f, 0.0f)));
+    m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, {-1000.0f, 0.0f, -1000.0f}, 1));
+    m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, 1));
+    m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 2.0f, 0.0f)));
     m_Scene->Add(new Sphere(10.0f, 3, glm::vec3(30.0f, 20.0f, -20.0f)));
     constexpr int spheresCount = 8;
     for (int i = 0; i < spheresCount; i++)

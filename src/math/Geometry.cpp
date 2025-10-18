@@ -1,5 +1,6 @@
 #include "Geometry.h"
 
+#include "glm/ext/quaternion_geometric.hpp"
 #include "glm/gtx/norm.inl"
 
 Sphere::Sphere(const float radius, const uint32_t materialIndex, const glm::vec3 &center)
@@ -15,7 +16,7 @@ HitPayload Sphere::Hit(const Ray &ray, float tMin, float tMax) const {
 
     const float discriminant = h * h - a * c;
     if (discriminant < 0) {
-        return {.IsHit = false};
+        return {.DidCollide = false};
     }
 
     const float sqrtDiscr = sqrt(discriminant);
@@ -24,14 +25,14 @@ HitPayload Sphere::Hit(const Ray &ray, float tMin, float tMax) const {
     if (root <= tMin || root >= tMax) {
         root = (h + sqrtDiscr) / a;
         if (root <= tMin || root >= tMax)
-            return {.IsHit = false};
+            return {.DidCollide = false};
     }
 
     HitPayload hitRecord{};
-    hitRecord.IsHit = true;
+    hitRecord.DidCollide = true;
     hitRecord.HitDistance = root;
     hitRecord.WorldPosition = ray.PointAt(root);
-    hitRecord.WorldNormal = NormalAtPoint(hitRecord.WorldPosition);
+    hitRecord.SetFaceNormal(ray, NormalAtPoint(hitRecord.WorldPosition));
     return hitRecord;
 }
 
@@ -41,4 +42,54 @@ glm::vec3 Sphere::NormalAtPoint(const glm::vec3 &point) const {
 
 void Sphere::MoveTo(const glm::vec3 &point) {
     m_Center = point;
+}
+
+Triangle::Triangle(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, const uint32_t materialIndex)
+    : m_A(a), m_B(b), m_C(c), m_MaterialIndex(materialIndex) {
+}
+
+HitPayload Triangle::Hit(const Ray &ray, float tMin, float tMax) const {
+    glm::vec3 E1 = m_B - m_A;
+    glm::vec3 E2 = m_C - m_A;
+    glm::vec3 normal = Normal();
+
+    const float determinant = -glm::dot(ray.Direction, normal);
+    if (determinant < 0.0f) {
+        return {.DidCollide = false};
+    }
+    float invDeterminant = 1 / determinant;
+    const glm::vec3 AO = ray.Origin - m_A;
+    glm::vec3 DAO = glm::cross(AO, ray.Direction);
+
+    float t = glm::dot(AO, normal) * invDeterminant;
+    if (t < 0.0f || t <= tMin || t >= tMax) {
+        return {.DidCollide = false};
+    }
+    float u = glm::dot(E2, DAO) * invDeterminant;
+    if (u < 0.0f) {
+        return {.DidCollide = false};
+    }
+    float v = -glm::dot(E1, DAO) * invDeterminant;
+    if (v < 0.0f) {
+        return {.DidCollide = false};
+    }
+    float w = 1 - u - v;
+    if (w < 0.0f) {
+        return {.DidCollide = false};
+    }
+
+    HitPayload hitRecord{};
+    hitRecord.DidCollide = true;
+    hitRecord.HitDistance = t;
+    hitRecord.WorldPosition = ray.PointAt(t);
+    hitRecord.WorldNormal = glm::normalize(normal);
+    return hitRecord;
+}
+
+glm::vec3 Triangle::Normal() const {
+    return glm::cross(m_B - m_A, m_C - m_A);
+}
+
+uint32_t Triangle::GetMaterialIndex() const {
+    return m_MaterialIndex;
 }

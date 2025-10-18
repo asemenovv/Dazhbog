@@ -25,7 +25,7 @@ public:
 
     Settings GetSettings() const { return m_Settings; }
 private:
-    glm::vec4 perPixel(uint32_t x, uint32_t y); // like RayGen shader
+    glm::vec4 perPixel(uint32_t x, uint32_t y) const; // like RayGen shader
 
     HitPayload traceRay(const Ray& ray) const;
 

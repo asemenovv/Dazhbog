@@ -12,15 +12,15 @@ public:
 
     ~Scene() = default;
 
-    void Add(Sphere *sphere);
+    void Add(Hittable *sphere);
 
     void Add(Material *material);
 
-    [[nodiscard]] std::vector<std::unique_ptr<Sphere> > &GetSpheres();
+    [[nodiscard]] std::vector<std::unique_ptr<Hittable> > &GetHittableObjects();
 
     [[nodiscard]] std::vector<std::unique_ptr<Material> > &GetMaterials();
 
 private:
-    std::vector<std::unique_ptr<Sphere> > m_Spheres;
+    std::vector<std::unique_ptr<Hittable> > m_HittableObjects;
     std::vector<std::unique_ptr<Material> > m_Materials;
 };

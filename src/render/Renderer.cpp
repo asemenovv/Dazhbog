@@ -19,8 +19,8 @@ namespace Utils {
 
     static uint32_t PCG_Hash(const uint32_t input) {
         const uint32_t state = input * 747796405u + 2891336453u;
-        const uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) + 277803737u;
-        return (word >> 22u) ^ word;
+        const uint32_t word = (state >> ((state >> 28u) + 4u) ^ state) + 277803737u;
+        return word >> 22u ^ word;
     }
 
     static float RandomFloat(uint32_t& seed) {
@@ -47,7 +47,7 @@ void Renderer::Render() {
         memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
     }
 
-    tbb::parallel_for<int>(0, m_Height, 1, [this](int y) {
+    tbb::parallel_for<int>(0, m_Height, 1, [this](const int y) {
         for (int x = 0; x < m_Width; x++)
         {
             const glm::vec4 color = perPixel(x, y);
@@ -86,8 +86,7 @@ glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
 float SKY_BRIGHTNESS = 0.2f;
 float AMBIENT = 0.1f;
 
-glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
-{
+glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y) const {
     Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
@@ -103,13 +102,13 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
         seed += i;
 
         const HitPayload payload = traceRay(ray);
-        if (!payload.IsHit) {
+        if (!payload.DidCollide) {
             brightnessScore += SKY_BRIGHTNESS * SKY_COLOR * rayColor;
             break;
         }
 
-        Sphere* sphere = m_ActiveScene->GetSpheres()[payload.ObjectIndex].get();
-        Material* material = m_ActiveScene->GetMaterials()[sphere->GetMaterialIndex()].get();
+        Hittable* hittable = m_ActiveScene->GetHittableObjects()[payload.ObjectIndex].get();
+        Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
 
         brightnessScore += material->GetEmission() * rayColor;
         rayColor *= material->Albedo;
@@ -121,17 +120,15 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {
-    float distanceToCurrentObject = std::numeric_limits<float>::max();
-    HitPayload nearestHitPayload = {.IsHit = false};
-    for (int i = 0; i < m_ActiveScene->GetSpheres().size(); i++) {
-        const Sphere* sphere = m_ActiveScene->GetSpheres()[i].get();
-        const HitPayload payload = sphere->Hit(ray, 0, std::numeric_limits<float>::max());
-        if (!payload.IsHit)
-            continue;
-        if (payload.HitDistance < distanceToCurrentObject) {
+    float closestSoFar = std::numeric_limits<float>::max();
+    HitPayload nearestHitPayload = {.DidCollide = false};
+    for (int i = 0; i < m_ActiveScene->GetHittableObjects().size(); i++) {
+        const Hittable* hittable = m_ActiveScene->GetHittableObjects()[i].get();
+        const HitPayload payload = hittable->Hit(ray, 0, closestSoFar);
+        if (payload.DidCollide) {
             nearestHitPayload = payload;
             nearestHitPayload.ObjectIndex = i;
-            distanceToCurrentObject = payload.HitDistance;
+            closestSoFar = payload.HitDistance;
         }
     }
     return nearestHitPayload;

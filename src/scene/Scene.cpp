@@ -7,9 +7,9 @@ Scene::Scene() {
     }));
 }
 
-void Scene::Add(Sphere* sphere)
+void Scene::Add(Hittable* sphere)
 {
-    m_Spheres.emplace_back(std::unique_ptr<Sphere>(sphere));
+    m_HittableObjects.emplace_back(std::unique_ptr<Hittable>(sphere));
 }
 
 void Scene::Add(Material *material)
@@ -17,9 +17,9 @@ void Scene::Add(Material *material)
     m_Materials.emplace_back(std::unique_ptr<Material>(material));
 }
 
-std::vector<std::unique_ptr<Sphere>>& Scene::GetSpheres()
+std::vector<std::unique_ptr<Hittable>>& Scene::GetHittableObjects()
 {
-    return m_Spheres;
+    return m_HittableObjects;
 }
 
 std::vector<std::unique_ptr<Material>> & Scene::GetMaterials()

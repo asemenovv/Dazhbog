@@ -17,17 +17,22 @@ struct Ray {
 
 struct HitPayload
 {
-    bool IsHit = false;
+    bool DidCollide = false;
+    bool FrontFace = true;
     float HitDistance = 0.0;
     glm::vec3 WorldPosition{0.0};
     glm::vec3 WorldNormal{0.0};
 
     uint32_t ObjectIndex = 0;
+
+    void SetFaceNormal(const Ray& ray, const glm::vec3& outwardNormal);
 };
 
 class Hittable {
 public:
     virtual ~Hittable() = default;
+
+    virtual uint32_t GetMaterialIndex() const = 0;
 
     virtual HitPayload Hit(const Ray& ray, float tMin, float tMax) const = 0;
 };

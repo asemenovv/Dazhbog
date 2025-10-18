@@ -14,7 +14,7 @@ public:
 
     [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const;
 
-    uint32_t GetMaterialIndex() const { return m_MaterialIndex; }
+    uint32_t GetMaterialIndex() const override { return m_MaterialIndex; }
 
     [[nodiscard]] glm::vec4 GetCenter() const { return {m_Center, 1.0f}; }
 
@@ -23,5 +23,25 @@ public:
 private:
     glm::vec3 m_Center;
     float m_Radius;
+    uint32_t m_MaterialIndex;
+};
+
+
+class Triangle final : public Hittable {
+public:
+    explicit Triangle(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, uint32_t materialIndex);
+
+    ~Triangle() override = default;
+
+    HitPayload Hit(const Ray& ray, float tMin, float tMax) const override;
+
+    [[nodiscard]] glm::vec3 Normal() const;
+
+    uint32_t GetMaterialIndex() const override;
+
+private:
+    glm::vec3 m_A;
+    glm::vec3 m_B;
+    glm::vec3 m_C;
     uint32_t m_MaterialIndex;
 };
