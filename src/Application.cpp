@@ -13,7 +13,7 @@ Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
     m_Window = std::make_unique<MainWindow>([&](const int width, const int height) {
         this->OnCanvasResize(width, height);
     });
-    m_Window->resize(800,600);
+    m_Window->resize(1024,768);
     m_Window->show();
 
     m_RenderTimer = std::make_unique<QTimer>(m_Window.get());
@@ -21,7 +21,8 @@ Application::Application(int argc, char *argv[]): m_RenderTimeMs(0) {
     m_RenderTimer->start();
 
     m_Camera = std::make_unique<Camera>(45.0, 0.1, 100.0, m_Window->GetCanvasSize());
-    m_Camera->PlaceInWorld({0.0, 5.0, 15.0}, {0.0, 0.0, 1.0});
+    m_Camera->PlaceInWorld({0.4, 4.3, 11}, {0.2, 0.4, 0.9});
+    m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
 }
@@ -144,6 +145,7 @@ bool Application::eventFilter(QObject *obj, QEvent *event) {
         }
         if (cameraMoved) {
             m_Camera->Refresh();
+            m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
             m_Renderer->ResetFrameIndex();
         }
         return false;

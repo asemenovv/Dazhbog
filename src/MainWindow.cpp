@@ -21,6 +21,17 @@ void MainWindow::UpdateRenderTime(const int64_t renderTime) {
     m_RenderTimeLabel->setText(QString("Render time: %1 ms").arg(renderTime));
 }
 
+void MainWindow::UpdateCameraLocation(const glm::vec3& position, const glm::vec3& direction) {
+    m_CameraPositionLabel->setText(QString("Camera Position: (%1, %2, %3)")
+        .arg(position.x,6, 'f', 2)
+        .arg(position.y,6, 'f', 2)
+        .arg(position.z,6, 'f', 2));
+    m_CameraDirectionLabel->setText(QString("Camera Direction: (%1, %2, %3)")
+        .arg(direction.x, 6, 'f', 2)
+        .arg(direction.y, 6, 'f', 2)
+        .arg(direction.z, 6, 'f', 2));
+}
+
 void MainWindow::ShowImage(const uint32_t *pixels) const {
     const auto width = m_Canvas->width();
     const auto height = m_Canvas->height();
@@ -40,7 +51,7 @@ void MainWindow::onRenderClicked() {
 void MainWindow::setupUi() {
     auto* splitter = new QSplitter(Qt::Horizontal, this);
 
-    m_Canvas = new ImageCanvas(splitter);
+    m_Canvas = new ImageCanvas(splitter);;
 
     auto* rightPanel = new QFrame(splitter);
     rightPanel->setFrameShape(QFrame::NoFrame);
@@ -52,15 +63,19 @@ void MainWindow::setupUi() {
     renderBtn->setObjectName("btnRender");
 
     m_RenderTimeLabel = new QLabel("Render time: –", rightPanel);
+    m_CameraPositionLabel = new QLabel("Camera Position: –", rightPanel);
+    m_CameraDirectionLabel = new QLabel("Camera Direction: –", rightPanel);
 
     rightLayout->addWidget(renderBtn);
     rightLayout->addWidget(m_RenderTimeLabel);
+    rightLayout->addWidget(m_CameraPositionLabel);
+    rightLayout->addWidget(m_CameraDirectionLabel);
     rightLayout->addStretch(1);
 
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);
-    rightPanel->setMinimumWidth(180);
-    rightPanel->setMaximumWidth(320);
+    rightPanel->setMinimumWidth(300);
+    rightPanel->setMaximumWidth(640);
 
     setCentralWidget(splitter);
 

@@ -37,7 +37,7 @@ class Sphere {
 public:
     explicit Sphere(float radius, uint32_t materialIndex = 0, const glm::vec3 &center = glm::vec3(0.0f));
 
-    [[nodiscard]] ModelIntersections Intersects(const Ray &ray) const;
+    [[nodiscard]] ModelIntersections Hit(const Ray &ray) const;
 
     [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const;
 

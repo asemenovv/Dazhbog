@@ -44,8 +44,7 @@ void Renderer::Render() {
     if (m_FrameIndex == 1) {
         memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
     }
-#define MT 1
-#if MT
+
     tbb::parallel_for<int>(0, m_Height, 1, [this](int y) {
         for (int x = 0; x < m_Width; x++)
         {
@@ -59,22 +58,6 @@ void Renderer::Render() {
             m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
         }
     });
-#else
-    for (int y = 0; y < m_Height; y++)
-    {
-        for (int x = 0; x < m_Width; x++)
-        {
-            const glm::vec4 color = perPixel(x, y);
-            m_AccumulationData[x + y * m_Width] += color;
-
-            glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_Width];
-            accumulatedColor /= static_cast<float>(m_FrameIndex);
-
-            accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0), glm::vec4(1.0f));
-            m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
-        }
-    }
-#endif
 
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
@@ -92,11 +75,13 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 
     delete[] m_AccumulationData;
     m_AccumulationData = new glm::vec4[width * height];
+
+    ResetFrameIndex();
 }
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
-float SKY_BRIGHTNESS = 1.0f;
+float SKY_BRIGHTNESS = 0.2f;
 float AMBIENT = 0.1f;
 
 glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y)
@@ -147,7 +132,7 @@ Renderer::HitPayload Renderer::traceRay(const Ray& ray)
     float hitDistance = std::numeric_limits<float>::max();
     for (int i = 0; i < m_ActiveScene->GetSpheres().size(); i++) {
         const Sphere* sphere = m_ActiveScene->GetSpheres()[i].get();
-        const ModelIntersections intersects = sphere->Intersects(ray);
+        const ModelIntersections intersects = sphere->Hit(ray);
         if (intersects.NumberOfIntersections == 0)
             continue;
         if (intersects.DistanceToNearest > 0.0f && intersects.DistanceToNearest < hitDistance) {
@@ -167,7 +152,7 @@ Renderer::HitPayload Renderer::closestHit(const Ray& ray, const float hitDistanc
     payload.ObjectIndex = objectIndex;
 
     Sphere* closestSphere = m_ActiveScene->GetSpheres()[objectIndex].get();
-    const auto intersection = closestSphere->Intersects(ray);
+    const auto intersection = closestSphere->Hit(ray);
     payload.WorldPosition = intersection.FirstIntersection;
     payload.WorldNormal = closestSphere->NormalAtPoint(intersection.FirstIntersection);
     return payload;
