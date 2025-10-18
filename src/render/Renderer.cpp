@@ -124,8 +124,7 @@ HitPayload Renderer::traceRay(const Ray& ray) const {
     HitPayload nearestHitPayload = {.DidCollide = false};
     for (int i = 0; i < m_ActiveScene->GetHittableObjects().size(); i++) {
         const Hittable* hittable = m_ActiveScene->GetHittableObjects()[i].get();
-        const HitPayload payload = hittable->Hit(ray, 0, closestSoFar);
-        if (payload.DidCollide) {
+        if (const HitPayload payload = hittable->Hit(ray, Interval(0.0f, closestSoFar)); payload.DidCollide) {
             nearestHitPayload = payload;
             nearestHitPayload.ObjectIndex = i;
             closestSoFar = payload.HitDistance;

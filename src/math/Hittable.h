@@ -1,4 +1,5 @@
 #pragma once
+#include "Interval.h"
 #include "glm/glm.hpp"
 
 struct Ray {
@@ -34,5 +35,5 @@ public:
 
     virtual uint32_t GetMaterialIndex() const = 0;
 
-    virtual HitPayload Hit(const Ray& ray, float tMin, float tMax) const = 0;
+    virtual HitPayload Hit(const Ray& ray, Interval tBoundaries) const = 0;
 };

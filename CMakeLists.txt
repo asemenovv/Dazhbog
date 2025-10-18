@@ -24,6 +24,8 @@ add_executable(${PROJECT_NAME}
         src/wallnut/Random.h
         src/math/Hittable.cpp
         src/math/Hittable.h
+        src/math/Interval.cpp
+        src/math/Interval.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

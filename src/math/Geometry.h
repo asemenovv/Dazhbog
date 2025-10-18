@@ -10,7 +10,7 @@ public:
 
     ~Sphere() override = default;
 
-    HitPayload Hit(const Ray& ray, float tMin, float tMax) const override;
+    HitPayload Hit(const Ray& ray, Interval tBoundaries) const override;
 
     [[nodiscard]] glm::vec3 NormalAtPoint(const glm::vec3 &point) const;
 
@@ -33,7 +33,7 @@ public:
 
     ~Triangle() override = default;
 
-    HitPayload Hit(const Ray& ray, float tMin, float tMax) const override;
+    HitPayload Hit(const Ray& ray, Interval tBoundaries) const override;
 
     [[nodiscard]] glm::vec3 Normal() const;
 

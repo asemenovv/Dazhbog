@@ -7,7 +7,7 @@ Sphere::Sphere(const float radius, const uint32_t materialIndex, const glm::vec3
     : m_Center(center), m_Radius(radius), m_MaterialIndex(materialIndex) {
 }
 
-HitPayload Sphere::Hit(const Ray &ray, float tMin, float tMax) const {
+HitPayload Sphere::Hit(const Ray &ray, Interval tBoundaries) const {
     // see https://raytracing.github.io/books/RayTracingInOneWeekend.html#surfacenormalsandmultipleobjects/simplifyingtheray-sphereintersectioncode
     const glm::vec3 oc = m_Center - ray.Origin;
     const float a = glm::length2(ray.Direction);
@@ -22,9 +22,9 @@ HitPayload Sphere::Hit(const Ray &ray, float tMin, float tMax) const {
     const float sqrtDiscr = sqrt(discriminant);
 
     auto root = (h - sqrtDiscr) / a;
-    if (root <= tMin || root >= tMax) {
+    if (!tBoundaries.Surrounds(root)) {
         root = (h + sqrtDiscr) / a;
-        if (root <= tMin || root >= tMax)
+        if (!tBoundaries.Surrounds(root))
             return {.DidCollide = false};
     }
 
@@ -48,7 +48,7 @@ Triangle::Triangle(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, c
     : m_A(a), m_B(b), m_C(c), m_MaterialIndex(materialIndex) {
 }
 
-HitPayload Triangle::Hit(const Ray &ray, float tMin, float tMax) const {
+HitPayload Triangle::Hit(const Ray &ray, Interval tBoundaries) const {
     glm::vec3 E1 = m_B - m_A;
     glm::vec3 E2 = m_C - m_A;
     glm::vec3 normal = Normal();
@@ -62,7 +62,7 @@ HitPayload Triangle::Hit(const Ray &ray, float tMin, float tMax) const {
     glm::vec3 DAO = glm::cross(AO, ray.Direction);
 
     float t = glm::dot(AO, normal) * invDeterminant;
-    if (t < 0.0f || t <= tMin || t >= tMax) {
+    if (t < 0.0f || !tBoundaries.Surrounds(t)) {
         return {.DidCollide = false};
     }
     float u = glm::dot(E2, DAO) * invDeterminant;
