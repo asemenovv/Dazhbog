@@ -48,10 +48,20 @@ void Application::SetupScene() {
         .Albedo = {0.8, 0.5, 0.2},
         .Roughness = 0.1f,
         .EmissionColor = {0.8, 0.5, 0.2},
-        .EmissionPower = 10.0f
+        .EmissionPower = 20.0f
     }));
+    m_Scene->Add(new Material({ // Green Cube 4
+        .Albedo = {0.0, 1.0, 0.0},
+        .Roughness = 1.0f,
+        .EmissionColor = {0.0, 1.0, 0.0},
+        .EmissionPower = 0.0f
+    }));
+    //Floor
     m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, {-1000.0f, 0.0f, -1000.0f}, 1));
     m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, 1));
+
+    addBox(4);
+
     m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 2.0f, 0.0f)));
     m_Scene->Add(new Sphere(10.0f, 3, glm::vec3(30.0f, 20.0f, -20.0f)));
     constexpr int spheresCount = 8;
@@ -156,4 +166,46 @@ bool Application::eventFilter(QObject *obj, QEvent *event) {
         qDebug() << "Global click at:" << mouseEvent->position();
     }
     return QObject::eventFilter(obj, event);
+}
+
+void Application::addBox(int materialIndex) {
+    const float s = 0.5f; // половина размера куба
+
+    glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});
+    glm::mat4 transform = translate * scale;
+
+    // Вершины куба
+    glm::vec3 v000 = glm::vec3(transform * glm::vec4(-s, -s, -s, 1.0));
+    glm::vec3 v001 = glm::vec3(transform * glm::vec4(-s, -s,  s, 1.0));
+    glm::vec3 v010 = glm::vec3(transform * glm::vec4(-s,  s, -s, 1.0));
+    glm::vec3 v011 = glm::vec3(transform * glm::vec4(-s,  s,  s, 1.0));
+    glm::vec3 v100 = glm::vec3(transform * glm::vec4( s, -s, -s, 1.0));
+    glm::vec3 v101 = glm::vec3(transform * glm::vec4( s, -s,  s, 1.0));
+    glm::vec3 v110 = glm::vec3(transform * glm::vec4( s,  s, -s, 1.0));
+    glm::vec3 v111 = glm::vec3(transform * glm::vec4( s,  s,  s, 1.0));
+
+    // Низ (y = -s)
+    m_Scene->Add(new Triangle(v100, v101, v001, materialIndex));
+    m_Scene->Add(new Triangle(v100, v001, v000, materialIndex));
+
+    // Верх (y = +s)
+    m_Scene->Add(new Triangle(v011, v111, v110, materialIndex));
+    m_Scene->Add(new Triangle(v011, v110, v010, materialIndex));
+
+    // Левая грань (x = -s)
+    m_Scene->Add(new Triangle(v001, v011, v010, materialIndex));
+    m_Scene->Add(new Triangle(v001, v010, v000, materialIndex));
+
+    // Правая грань (x = +s)
+    m_Scene->Add(new Triangle(v110, v111, v101, materialIndex));
+    m_Scene->Add(new Triangle(v110, v101, v100, materialIndex));
+
+    // Задняя грань (z = -s)
+    m_Scene->Add(new Triangle(v010, v110, v100, materialIndex));
+    m_Scene->Add(new Triangle(v010, v100, v000, materialIndex));
+
+    // Передняя грань (z = +s)
+    m_Scene->Add(new Triangle(v101, v111, v011, materialIndex));
+    m_Scene->Add(new Triangle(v101, v011, v001, materialIndex));
 }

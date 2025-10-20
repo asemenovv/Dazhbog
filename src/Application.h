@@ -30,10 +30,18 @@ protected slots:
 
 private:
     std::unique_ptr<QApplication> m_QtApplication;
+
     std::unique_ptr<MainWindow> m_Window;
+
     std::unique_ptr<Renderer> m_Renderer;
+
     std::unique_ptr<Camera> m_Camera;
+
     std::unique_ptr<Scene> m_Scene;
+
     std::unique_ptr<QTimer> m_RenderTimer;
+
     int64_t m_RenderTimeMs;
+
+    void addBox(int materialIndex);
 };

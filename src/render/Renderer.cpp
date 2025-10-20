@@ -7,12 +7,20 @@
 #include <tbb/parallel_for.h>
 
 #include "Material.h"
+#include "glm/ext/scalar_constants.hpp"
 
 namespace Utils {
+    static double LinearToGamma(const double linearComponent)
+    {
+        if (linearComponent > 0)
+            return std::sqrt(linearComponent);
+        return 0;
+    }
+
     static uint32_t Vec4ToRGBA8(const glm::vec4 color) {
-        const auto r = static_cast<uint8_t>(color.r * 255.0f);
-        const auto g = static_cast<uint8_t>(color.g * 255.0f);
-        const auto b = static_cast<uint8_t>(color.b * 255.0f);
+        const auto r = static_cast<uint8_t>(LinearToGamma(color.r) * 255.0f);
+        const auto g = static_cast<uint8_t>(LinearToGamma(color.g) * 255.0f);
+        const auto b = static_cast<uint8_t>(LinearToGamma(color.b) * 255.0f);
         const auto a = static_cast<uint8_t>(color.a * 255.0f);
         return a << 24 | b << 16 | g << 8 | r;
     }
@@ -28,12 +36,29 @@ namespace Utils {
         return static_cast<float>(seed) / static_cast<float>(std::numeric_limits<uint32_t>::max());
     }
 
+    static float RandomFloat(uint32_t& seed, const double min, const double max) {
+        return min + (max - min) * RandomFloat(seed);
+    }
+
     static glm::vec3 InUnitSphere(uint32_t& seed) {
         return glm::normalize(glm::vec3(
-            RandomFloat(seed) * 2.0 - 1.0,
-            RandomFloat(seed) * 2.0 - 1.0,
-            RandomFloat(seed) * 2.0 - 1.0
+            RandomFloat(seed, -1.0f, 1.0f),
+            RandomFloat(seed, -1.0f, 1.0f),
+            RandomFloat(seed, -1.0f, 1.0f)
         ));
+    }
+
+    static glm::vec3 RandomInHemisphere(uint32_t& seed, const glm::vec3& normal) {
+        const float u = RandomFloat(seed, 0.0f, 1.0f);
+        const float v = RandomFloat(seed, 0.0f, 1.0f);
+        const float theta = 2.0f * glm::pi<float>() * u;
+        const float phi = acos(1.0f - 2.0f * v);
+        const glm::vec3 dir(
+            sin(phi) * cos(theta),
+            sin(phi) * sin(theta),
+            cos(phi)
+        );
+        return (glm::dot(dir, normal) > 0.0f) ? dir : -dir;
     }
 }
 
@@ -83,10 +108,10 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
 
 glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
-float SKY_BRIGHTNESS = 0.2f;
+float SKY_BRIGHTNESS = 0.4f;
 float AMBIENT = 0.1f;
 
-glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y) const {
+glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
@@ -107,14 +132,14 @@ glm::vec4 Renderer::perPixel(uint32_t x, uint32_t y) const {
             break;
         }
 
-        Hittable* hittable = m_ActiveScene->GetHittableObjects()[payload.ObjectIndex].get();
-        Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
+        const Hittable* hittable = m_ActiveScene->GetHittableObjects()[payload.ObjectIndex].get();
+        const Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
 
         brightnessScore += material->GetEmission() * rayColor;
         rayColor *= material->Albedo;
 
         ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-        ray.Direction = glm::normalize(Utils::InUnitSphere(seed) + payload.WorldNormal);
+        ray.Direction = payload.WorldNormal + Utils::InUnitSphere(seed);
     }
     return {brightnessScore, 1.0f};
 }
