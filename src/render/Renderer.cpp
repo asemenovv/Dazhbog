@@ -31,24 +31,23 @@ uint32_t FRAMES_TO_ACCUMULATE = 200;
 Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
     : m_ImageData(nullptr), m_Width(0), m_Height(0), m_ActiveCamera(activeCamera), m_ActiveScene(activeScene) {
     OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
-    m_FullRenderTimer = std::make_unique<Utils::Timer>();
+    m_SceneRenderTimer = std::make_unique<Utils::Timer>();
     m_FrameRenderTimer = std::make_unique<Utils::Timer>();
 }
 
 Renderer::RenderingStatus Renderer::Render() {
     if (m_FrameIndex >= m_Settings.FramesToAccumulate)
     {
-        const uint64_t fullRenderingDuration = m_FullRenderTimer->StopAndGetTime();
         return {
             .FrameIndex = m_FrameIndex,
             .RenderFinished = true,
-            .SceneRenderTime = fullRenderingDuration,
+            .SceneRenderTime = m_SceneRenderTimer->StopAndGetTime(),
             .FrameRenderTime = 0,
         };
     }
     if (m_FrameIndex == 1) {
         memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
-        m_FullRenderTimer->Start();
+        m_SceneRenderTimer->Start();
     }
     m_FrameRenderTimer->Start();
 

@@ -52,6 +52,6 @@ private:
     Camera* m_ActiveCamera;
     Scene* m_ActiveScene;
 
-    std::unique_ptr<Utils::Timer> m_FullRenderTimer;
+    std::unique_ptr<Utils::Timer> m_SceneRenderTimer;
     std::unique_ptr<Utils::Timer> m_FrameRenderTimer;
 };
