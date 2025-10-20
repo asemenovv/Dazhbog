@@ -17,8 +17,13 @@ MainWindow::MainWindow(const ResizeHandler &resizeHandler, QWidget* parent) : QM
     statusBar()->showMessage("Ready");
 }
 
-void MainWindow::UpdateRenderTime(const int64_t renderTime) {
-    m_RenderTimeLabel->setText(QString("Render time: %1 ms").arg(renderTime));
+void MainWindow::UpdateRenderTime(const int64_t frameRenderTime, const int64_t sceneRenderTime) {
+    m_FrameRenderTimeLabel->setText(QString("Frame Render Time: %1 ms").arg(frameRenderTime));
+    m_SceneRenderTimeLabel->setText(QString("Scene Render Time: %1 ms").arg(sceneRenderTime));
+}
+
+void MainWindow::UpdateFrame(const uint32_t frameNo) {
+    m_FrameLabel->setText(QString("Current Frame: %1").arg(frameNo));
 }
 
 void MainWindow::UpdateCameraLocation(const glm::vec3& position, const glm::vec3& direction) {
@@ -62,12 +67,16 @@ void MainWindow::setupUi() {
     auto* renderBtn = new QPushButton("Render", rightPanel);
     renderBtn->setObjectName("btnRender");
 
-    m_RenderTimeLabel = new QLabel("Render time: –", rightPanel);
+    m_FrameLabel = new QLabel("Current Frame: -", rightPanel);
+    m_FrameRenderTimeLabel = new QLabel("Frame Render time: –", rightPanel);
+    m_SceneRenderTimeLabel = new QLabel("Scene Render time: –", rightPanel);
     m_CameraPositionLabel = new QLabel("Camera Position: –", rightPanel);
     m_CameraDirectionLabel = new QLabel("Camera Direction: –", rightPanel);
 
     rightLayout->addWidget(renderBtn);
-    rightLayout->addWidget(m_RenderTimeLabel);
+    rightLayout->addWidget(m_FrameLabel);
+    rightLayout->addWidget(m_FrameRenderTimeLabel);
+    rightLayout->addWidget(m_SceneRenderTimeLabel);
     rightLayout->addWidget(m_CameraPositionLabel);
     rightLayout->addWidget(m_CameraDirectionLabel);
     rightLayout->addStretch(1);

@@ -5,6 +5,9 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/scalar_constants.hpp"
 
+float ROTATION_SPEED = 0.05f;
+float CAMERA_SPEED = 0.02f;
+
 Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_QtApplication = std::make_unique<QApplication>(argc, argv);
     QApplication::setApplicationName("Dazhbog");
@@ -56,16 +59,15 @@ void Application::SetupScene() {
 void Application::OnRender() {
     QElapsedTimer timer;
     timer.start();
-    m_Renderer->Render();
-    m_RenderTimeMs = timer.elapsed();
-    m_Window->UpdateRenderTime(m_RenderTimeMs);
+    const Renderer::RenderingStatus renderingStatus = m_Renderer->Render();
+    m_RenderTimeMs = renderingStatus.FrameRenderTime;
+    m_Window->UpdateRenderTime(renderingStatus.FrameRenderTime, renderingStatus.SceneRenderTime);
+    m_Window->UpdateFrame(renderingStatus.FrameIndex);
 
     const auto imageData = m_Renderer->GetFinalImageData();
     m_Window->ShowImage(imageData);
-    OnUpdate(static_cast<float>(m_RenderTimeMs));
+    OnUpdate(static_cast<float>(renderingStatus.FrameRenderTime));
 }
-
-float ROTATION_SPEED = 0.05f;
 
 void Application::OnUpdate(const float deltaTime) {
 }
@@ -76,8 +78,6 @@ void Application::OnCanvasResize(const int width, const int height) const {
         m_Camera->OnResize(width, height);
     }
 }
-
-float CAMERA_SPEED = 0.02f;
 
 bool Application::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::KeyPress) {

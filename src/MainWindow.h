@@ -13,7 +13,9 @@ public:
 
     explicit MainWindow(const ResizeHandler &resizeHandler, QWidget* parent = nullptr);
 
-    void UpdateRenderTime(int64_t renderTime);
+    void UpdateFrame(uint32_t frameNo);
+
+    void UpdateRenderTime(int64_t frameRenderTime, int64_t sceneRenderTime);
 
     void UpdateCameraLocation(const glm::vec3& position, const glm::vec3& direction);
 
@@ -28,7 +30,9 @@ private:
     void setupUi();
 
     ImageCanvas* m_Canvas = nullptr;
-    QLabel* m_RenderTimeLabel = nullptr;
+    QLabel* m_FrameLabel = nullptr;
+    QLabel* m_FrameRenderTimeLabel = nullptr;
+    QLabel* m_SceneRenderTimeLabel = nullptr;
     QLabel* m_CameraPositionLabel = nullptr;
     QLabel* m_CameraDirectionLabel = nullptr;
     ResizeHandler m_ResizeHandler;

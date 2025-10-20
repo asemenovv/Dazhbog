@@ -1,21 +1,34 @@
 #pragma once
 
 #include <cstdint>
+#include <QTimer>
 #include <glm/glm.hpp>
 
 #include "Camera.h"
 #include "math/Geometry.h"
 #include "scene/Scene.h"
+#include "utils/Timer.h"
+
+#define MT_RENDERING 0
 
 class Renderer {
 public:
-    struct Settings {
+    struct Settings
+    {
         bool Accumulate = true;
+        uint32_t FramesToAccumulate = 200;
+    };
+    struct RenderingStatus
+    {
+        uint32_t FrameIndex = 0;
+        bool RenderFinished = false;
+        uint64_t SceneRenderTime = 0;
+        uint64_t FrameRenderTime = 0;
     };
 
     explicit Renderer(Camera* activeCamera, Scene* activeScene, glm::vec2 viewportSize);
 
-    void Render();
+    RenderingStatus Render();
 
     void OnResize(uint32_t width, uint32_t height);
 
@@ -38,4 +51,7 @@ private:
 
     Camera* m_ActiveCamera;
     Scene* m_ActiveScene;
+
+    std::unique_ptr<Utils::Timer> m_FullRenderTimer;
+    std::unique_ptr<Utils::Timer> m_FrameRenderTimer;
 };

@@ -1,12 +1,13 @@
 #include "Renderer.h"
 
-#include "math/Geometry.h"
 #include "scene/Scene.h"
 #include "wallnut/Random.h"
 
+#if MT_RENDERING
 #include <tbb/parallel_for.h>
+#endif
 
-#include "glm/ext/scalar_constants.hpp"
+#include "utils/Timer.h"
 
 namespace Utils {
     static double LinearToGamma(const double linearComponent)
@@ -25,17 +26,38 @@ namespace Utils {
     }
 }
 
+uint32_t FRAMES_TO_ACCUMULATE = 200;
+
 Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
     : m_ImageData(nullptr), m_Width(0), m_Height(0), m_ActiveCamera(activeCamera), m_ActiveScene(activeScene) {
     OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
+    m_FullRenderTimer = std::make_unique<Utils::Timer>();
+    m_FrameRenderTimer = std::make_unique<Utils::Timer>();
 }
 
-void Renderer::Render() {
+Renderer::RenderingStatus Renderer::Render() {
+    if (m_FrameIndex >= m_Settings.FramesToAccumulate)
+    {
+        const uint64_t fullRenderingDuration = m_FullRenderTimer->StopAndGetTime();
+        return {
+            .FrameIndex = m_FrameIndex,
+            .RenderFinished = true,
+            .SceneRenderTime = fullRenderingDuration,
+            .FrameRenderTime = 0,
+        };
+    }
     if (m_FrameIndex == 1) {
         memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
+        m_FullRenderTimer->Start();
     }
+    m_FrameRenderTimer->Start();
 
+#define MT_RENDERING 0
+#if MT_RENDERING
     tbb::parallel_for<int>(0, m_Height, 1, [this](const int y) {
+#else
+    for (int y = 0; y < m_Height; y++) {
+#endif
         for (int x = 0; x < m_Width; x++)
         {
             const glm::vec4 color = perPixel(x, y);
@@ -47,13 +69,22 @@ void Renderer::Render() {
             accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0), glm::vec4(1.0f));
             m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
         }
-    });
+    }
+#if MT_RENDERING
+);
+#endif
 
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
     } else {
         m_FrameIndex = 1;
     }
+    return {
+        .FrameIndex = m_FrameIndex,
+        .RenderFinished = false,
+        .SceneRenderTime = 0,
+        .FrameRenderTime = m_FrameRenderTimer->StopAndGetTime(),
+    };
 }
 
 void Renderer::OnResize(const uint32_t width, const uint32_t height) {
