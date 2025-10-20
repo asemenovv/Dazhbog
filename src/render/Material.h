@@ -1,18 +1,26 @@
 #pragma once
+#include "math/Hittable.h"
 
-#include <glm/glm.hpp>
+struct ScatterRays {
+    Ray Ray{};
+    glm::vec3 Attenuation;
+    glm::vec3 Emission;
+};
 
-struct Material {
-    glm::vec3 Albedo = glm::vec3(1.0f);
+class Material {
+public:
+    virtual ~Material() = default;
 
-    float Roughness = 1.0f;
-    float Metalness = 0.0f;
+    virtual ScatterRays Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const = 0;
+};
 
-    glm::vec3 EmissionColor = glm::vec3(1.0f);
-    float EmissionPower = 0.0f;
+class DiffuseMaterial final : public Material {
+public:
+    DiffuseMaterial(glm::vec3 Albedo, glm::vec3 EmissionColor, float EmissionPower);
 
-    glm::vec3 GetEmission() const
-    {
-        return EmissionPower * EmissionColor;
-    }
+    ScatterRays Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const override;
+private:
+    glm::vec3 m_Albedo;
+    glm::vec3 m_EmissionColor;
+    float m_EmissionPower;
 };

@@ -6,7 +6,6 @@
 
 #include <tbb/parallel_for.h>
 
-#include "Material.h"
 #include "glm/ext/scalar_constants.hpp"
 
 namespace Utils {
@@ -23,42 +22,6 @@ namespace Utils {
         const auto b = static_cast<uint8_t>(LinearToGamma(color.b) * 255.0f);
         const auto a = static_cast<uint8_t>(color.a * 255.0f);
         return a << 24 | b << 16 | g << 8 | r;
-    }
-
-    static uint32_t PCG_Hash(const uint32_t input) {
-        const uint32_t state = input * 747796405u + 2891336453u;
-        const uint32_t word = (state >> ((state >> 28u) + 4u) ^ state) + 277803737u;
-        return word >> 22u ^ word;
-    }
-
-    static float RandomFloat(uint32_t& seed) {
-        seed = PCG_Hash(seed);
-        return static_cast<float>(seed) / static_cast<float>(std::numeric_limits<uint32_t>::max());
-    }
-
-    static float RandomFloat(uint32_t& seed, const double min, const double max) {
-        return min + (max - min) * RandomFloat(seed);
-    }
-
-    static glm::vec3 InUnitSphere(uint32_t& seed) {
-        return glm::normalize(glm::vec3(
-            RandomFloat(seed, -1.0f, 1.0f),
-            RandomFloat(seed, -1.0f, 1.0f),
-            RandomFloat(seed, -1.0f, 1.0f)
-        ));
-    }
-
-    static glm::vec3 RandomInHemisphere(uint32_t& seed, const glm::vec3& normal) {
-        const float u = RandomFloat(seed, 0.0f, 1.0f);
-        const float v = RandomFloat(seed, 0.0f, 1.0f);
-        const float theta = 2.0f * glm::pi<float>() * u;
-        const float phi = acos(1.0f - 2.0f * v);
-        const glm::vec3 dir(
-            sin(phi) * cos(theta),
-            sin(phi) * sin(theta),
-            cos(phi)
-        );
-        return (glm::dot(dir, normal) > 0.0f) ? dir : -dir;
     }
 }
 
@@ -126,20 +89,19 @@ glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     for (int i = 0; i < BOUNCES; i++) {
         seed += i;
 
-        const HitPayload payload = traceRay(ray);
-        if (!payload.DidCollide) {
+        const HitPayload hitPayload = traceRay(ray);
+        if (!hitPayload.DidCollide) {
             brightnessScore += SKY_BRIGHTNESS * SKY_COLOR * rayColor;
             break;
         }
 
-        const Hittable* hittable = m_ActiveScene->GetHittableObjects()[payload.ObjectIndex].get();
+        const Hittable* hittable = m_ActiveScene->GetHittableObjects()[hitPayload.ObjectIndex].get();
         const Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
+        ScatterRays scatterRays = material->Scatter(ray, hitPayload, seed);
 
-        brightnessScore += material->GetEmission() * rayColor;
-        rayColor *= material->Albedo;
-
-        ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-        ray.Direction = payload.WorldNormal + Utils::InUnitSphere(seed);
+        brightnessScore += scatterRays.Emission * rayColor;
+        rayColor *= scatterRays.Attenuation;
+        ray = scatterRays.Ray;
     }
     return {brightnessScore, 1.0f};
 }

@@ -18,7 +18,6 @@ add_executable(${PROJECT_NAME}
         src/render/Camera.cpp
         src/Application.cpp
         src/scene/Scene.cpp
-        src/render/Material.h
         src/math/Geometry.cpp
         src/wallnut/Random.cpp
         src/wallnut/Random.h
@@ -26,6 +25,8 @@ add_executable(${PROJECT_NAME}
         src/math/Hittable.h
         src/math/Interval.cpp
         src/math/Interval.h
+        src/render/Material.cpp
+        src/render/Material.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

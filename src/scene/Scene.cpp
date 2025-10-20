@@ -1,10 +1,9 @@
 #include "Scene.h"
 
+#include "render/Material.h"
+
 Scene::Scene() {
-    Add(new Material({
-        .Albedo = {0.2, 0.2, 0.2},
-        .Roughness = 1.0f
-    }));
+    Add(new DiffuseMaterial({0.2, 0.2, 0.2}, {0.2, 0.2, 0.2}, 0.0f));
 }
 
 void Scene::Add(Hittable* sphere)
