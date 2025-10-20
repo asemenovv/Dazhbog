@@ -44,7 +44,7 @@ void Application::SetupScene() {
     // Emissive Sphere 3
     m_Scene->Add(new DiffuseMaterial({0.8, 0.5, 0.2}, {0.8, 0.5, 0.2}, 20.0f));
     // Green Cube 4
-    m_Scene->Add(new DiffuseMaterial({0.0, 1.0, 0.0}, {0.0, 1.0, 0.0}, 0.0f));
+    m_Scene->Add(new MetalMaterial({0.0, 1.0, 0.0}));
 
     //Floor
     m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, {-1000.0f, 0.0f, -1000.0f}, 1));
