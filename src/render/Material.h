@@ -17,7 +17,7 @@ public:
 class DiffuseMaterial final : public Material
 {
 public:
-    DiffuseMaterial(glm::vec3 Albedo);
+    explicit DiffuseMaterial(glm::vec3 Albedo);
 
     ScatterRays Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const override;
 private:
@@ -27,9 +27,10 @@ private:
 class MetalMaterial final : public Material
 {
 public:
-    explicit MetalMaterial(glm::vec3 Albedo);
+    explicit MetalMaterial(glm::vec3 albedo, float fuzziness);
 
     ScatterRays Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const override;
 private:
     glm::vec3 m_Albedo;
+    float m_Fuzziness;
 };

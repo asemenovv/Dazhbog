@@ -4,6 +4,8 @@
 #include "glm/gtc/epsilon.hpp"
 
 namespace Utils {
+    float Epsilon = 1e-8f;
+
     static uint32_t PCG_Hash(const uint32_t input) {
         const uint32_t state = input * 747796405u + 2891336453u;
         const uint32_t word = (state >> ((state >> 28u) + 4u) ^ state) + 277803737u;
@@ -48,7 +50,7 @@ DiffuseMaterial::DiffuseMaterial(const glm::vec3 Albedo)
 ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const {
     ScatterRays scattered{};
     glm::vec3 scatterDirection = hitPayload.WorldNormal + Utils::InUnitSphere(randomSeed);
-    if (glm::all(glm::epsilonEqual(scatterDirection, glm::vec3(0.0), 1e-8f)))
+    if (glm::all(glm::epsilonEqual(scatterDirection, glm::vec3(0.0), Utils::Epsilon)))
     {
         scatterDirection = hitPayload.WorldNormal;
     }
@@ -60,18 +62,21 @@ ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayloa
     return scattered;
 }
 
-MetalMaterial::MetalMaterial(glm::vec3 Albedo): m_Albedo(Albedo)
+MetalMaterial::MetalMaterial(const glm::vec3 albedo, const float fuzziness)
+    : m_Albedo(albedo), m_Fuzziness(fuzziness < 1.0f ? fuzziness : 1.0f)
 {
 }
 
 ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const
 {
     ScatterRays scattered{};
-    const glm::vec3 reflected = glm::reflect(ray.Direction, hitPayload.WorldNormal);
+    const glm::vec3 fuzzyComponent = m_Fuzziness * Utils::InUnitSphere(randomSeed);
+    glm::vec3 reflected = glm::normalize(glm::reflect(ray.Direction, hitPayload.WorldNormal));
+    reflected = reflected + fuzzyComponent;
 
-    scattered.Ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001f;
-    scattered.Ray.Direction = reflected;
+    const auto normalWithOffset = hitPayload.WorldNormal;// * 0.0001f;
+    scattered.Ray = Ray(reflected, hitPayload.WorldPosition + normalWithOffset);
     scattered.Attenuation = m_Albedo;
-    scattered.Scattered = true;
+    scattered.Scattered = glm::dot(scattered.Ray.Direction, normalWithOffset) > 0.0f;
     return scattered;
 }

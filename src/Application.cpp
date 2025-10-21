@@ -40,8 +40,8 @@ void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
     const auto greenMat = m_Scene->Add(new DiffuseMaterial({0.8, 0.8, 0.0}));
     const auto blueMat = m_Scene->Add(new DiffuseMaterial({0.1, 0.2, 0.5}));
-    const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}));
-    const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}));
+    const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}, 0.04));
+    const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}, 0.0));
 
     //Floor
     m_Scene->Add(new Triangle(
