@@ -8,6 +8,7 @@
 #  undef emit
 #endif
 #include <tbb/parallel_for.h>
+#include <oneapi/tbb/global_control.h>
 #endif
 
 #include "utils/Timer.h"
@@ -53,6 +54,7 @@ Renderer::RenderingStatus Renderer::Render() {
     m_FrameRenderTimer->Start();
 
 #if MT_RENDERING
+    tbb::global_control limit(tbb::global_control::max_allowed_parallelism, 4);
     tbb::parallel_for<int>(0, m_Height, 1, [this](const int y) {
 #else
     for (int y = 0; y < m_Height; y++) {
@@ -127,10 +129,10 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
         return scatterRays.Emission;
     }
 
-    // const glm::vec3 dir = glm::normalize(ray.Direction);
-    // const auto a = 0.5f * (dir.y + 1.0f);
-    // return (1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0);
-    return {0.0f, 0.0f, 0.0f};
+    const glm::vec3 dir = glm::normalize(ray.Direction);
+    const auto a = 0.5f * (dir.y + 1.0f);
+    return 0.1f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    // return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {
