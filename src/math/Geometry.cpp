@@ -93,3 +93,41 @@ glm::vec3 Triangle::Normal() const {
 uint32_t Triangle::GetMaterialIndex() const {
     return m_MaterialIndex;
 }
+
+Cube::Cube(const glm::mat4 &transform, const uint32_t materialIndex) : m_MaterialIndex(materialIndex) {
+    constexpr float s = 0.5f;
+    auto v000 = glm::vec3(transform * glm::vec4(-s, -s, -s, 1.0));
+    auto v001 = glm::vec3(transform * glm::vec4(-s, -s, s, 1.0));
+    auto v010 = glm::vec3(transform * glm::vec4(-s, s, -s, 1.0));
+    auto v011 = glm::vec3(transform * glm::vec4(-s, s, s, 1.0));
+    auto v100 = glm::vec3(transform * glm::vec4(s, -s, -s, 1.0));
+    auto v101 = glm::vec3(transform * glm::vec4(s, -s, s, 1.0));
+    auto v110 = glm::vec3(transform * glm::vec4(s, s, -s, 1.0));
+    auto v111 = glm::vec3(transform * glm::vec4(s, s, s, 1.0));
+
+    m_Triangles.emplace_back(Triangle(v100, v101, v001, materialIndex));
+    m_Triangles.emplace_back(Triangle(v100, v001, v000, materialIndex));
+    m_Triangles.emplace_back(Triangle(v011, v111, v110, materialIndex));
+    m_Triangles.emplace_back(Triangle(v011, v110, v010, materialIndex));
+    m_Triangles.emplace_back(Triangle(v001, v011, v010, materialIndex));
+    m_Triangles.emplace_back(Triangle(v001, v010, v000, materialIndex));
+    m_Triangles.emplace_back(Triangle(v110, v111, v101, materialIndex));
+    m_Triangles.emplace_back(Triangle(v110, v101, v100, materialIndex));
+    m_Triangles.emplace_back(Triangle(v010, v110, v100, materialIndex));
+    m_Triangles.emplace_back(Triangle(v010, v100, v000, materialIndex));
+    m_Triangles.emplace_back(Triangle(v101, v111, v011, materialIndex));
+    m_Triangles.emplace_back(Triangle(v101, v011, v001, materialIndex));
+}
+
+uint32_t Cube::GetMaterialIndex() const {
+    return m_MaterialIndex;
+}
+
+HitPayload Cube::Hit(const Ray &ray, const Interval tBoundaries) const {
+    for (auto &triangle : m_Triangles) {
+        if (const HitPayload payload = triangle.Hit(ray, tBoundaries); payload.DidCollide) {
+            return payload;
+        }
+    }
+    return { .DidCollide = false };
+}

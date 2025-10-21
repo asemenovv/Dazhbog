@@ -55,11 +55,13 @@ void Camera::RecalculateRayDirections() {
     }
 }
 
-void Camera::MoveForward(const float stepAmount) {
+void Camera::MoveForward(const float stepAmount)
+{
     m_Position -= glm::normalize(m_ForwardDirection) * stepAmount;
 }
 
-void Camera::MoveRight(const float stepAmount) {
+void Camera::MoveRight(const float stepAmount)
+{
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
     const glm::vec3 rightDirection = glm::normalize(glm::cross(m_ForwardDirection, upDirection));
     m_Position += rightDirection * stepAmount;

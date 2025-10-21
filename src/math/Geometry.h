@@ -45,3 +45,15 @@ private:
     glm::vec3 m_C;
     uint32_t m_MaterialIndex;
 };
+
+class Cube final : public Hittable {
+public:
+    explicit Cube(const glm::mat4 &transform, uint32_t materialIndex);
+
+    uint32_t GetMaterialIndex() const override;
+
+    HitPayload Hit(const Ray &ray, Interval tBoundaries) const override;
+private:
+    uint32_t m_MaterialIndex;
+    std::vector<Triangle> m_Triangles;
+};

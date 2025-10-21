@@ -7,10 +7,6 @@ public:
     explicit Interval(float min = +std::numeric_limits<float>::infinity(),
                       float max = -std::numeric_limits<float>::infinity());
 
-    Interval(const Interval &) = delete;
-
-    Interval(Interval &&) = delete;
-
     float Size() const;
 
     bool Contains(float x) const;
