@@ -57,6 +57,7 @@ ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayloa
     scattered.Ray.Direction = scatterDirection;
     scattered.Attenuation = m_Albedo;
     scattered.Emission = m_EmissionPower * m_EmissionColor;
+    scattered.Scattered = true;
     return scattered;
 }
 
@@ -73,5 +74,6 @@ ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload,
     scattered.Ray.Direction = reflected;
     scattered.Attenuation = m_Albedo;
     scattered.Emission = glm::vec3(0.0f);
+    scattered.Scattered = true;
     return scattered;
 }

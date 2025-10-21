@@ -53,7 +53,7 @@ void Application::SetupScene() {
     addBox(4);
 
     m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 2.0f, 0.0f)));
-    m_Scene->Add(new Sphere(10.0f, 3, glm::vec3(30.0f, 20.0f, -20.0f)));
+    m_Scene->Add(new Sphere(10.0f, 2, glm::vec3(30.0f, 20.0f, -20.0f)));
 }
 
 void Application::OnRender() {

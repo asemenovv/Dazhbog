@@ -109,31 +109,31 @@ glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
 
-    glm::vec3 rayColor(1.0f);
-    glm::vec3 brightnessScore(0.0f);
-
     uint32_t seed = x + m_Width * y;
     seed *= m_FrameIndex;
 
     constexpr int BOUNCES = 5;
-    for (int i = 0; i < BOUNCES; i++) {
-        seed += i;
+    auto rayColor = this->rayColor(ray, BOUNCES, seed);
+    return {rayColor, 1.0f};
+}
 
-        const HitPayload hitPayload = traceRay(ray);
-        if (!hitPayload.DidCollide) {
-            brightnessScore += SKY_BRIGHTNESS * SKY_COLOR * rayColor;
-            break;
-        }
+glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
+    if (depth <= 0)
+        return glm::vec3(0.0f, 0.0f, 0.0f);
 
+    const HitPayload hitPayload = traceRay(ray);
+    if (hitPayload.DidCollide) {
         const Hittable* hittable = m_ActiveScene->GetHittableObjects()[hitPayload.ObjectIndex].get();
         const Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
-        ScatterRays scatterRays = material->Scatter(ray, hitPayload, seed);
 
-        brightnessScore += scatterRays.Emission * rayColor;
-        rayColor *= scatterRays.Attenuation;
-        ray = scatterRays.Ray;
+        ScatterRays scatterRays = material->Scatter(ray, hitPayload, seed);
+        if (scatterRays.Scattered) {
+            return scatterRays.Attenuation * rayColor(scatterRays.Ray, depth-1, seed);
+        }
     }
-    return {brightnessScore, 1.0f};
+
+
+    return  SKY_BRIGHTNESS * SKY_COLOR;
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {

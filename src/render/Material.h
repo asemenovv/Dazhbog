@@ -5,6 +5,7 @@ struct ScatterRays {
     Ray Ray{};
     glm::vec3 Attenuation;
     glm::vec3 Emission;
+    bool Scattered = false;
 };
 
 class Material {

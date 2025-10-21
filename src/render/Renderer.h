@@ -40,6 +40,8 @@ public:
 private:
     glm::vec4 perPixel(uint32_t x, uint32_t y) const; // like RayGen shader
 
+    glm::vec3 rayColor(const Ray& ray, int depth, uint32_t &seed) const;
+
     HitPayload traceRay(const Ray& ray) const;
 
     Settings m_Settings;
