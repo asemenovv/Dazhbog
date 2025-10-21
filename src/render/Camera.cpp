@@ -56,7 +56,7 @@ void Camera::RecalculateRayDirections() {
 }
 
 void Camera::MoveForward(const float stepAmount) {
-    m_Position += m_ForwardDirection * stepAmount;
+    m_Position -= m_ForwardDirection * stepAmount;
 }
 
 void Camera::MoveRight(const float stepAmount) {

@@ -4,7 +4,6 @@
 struct ScatterRays {
     Ray Ray{};
     glm::vec3 Attenuation;
-    glm::vec3 Emission;
     bool Scattered = false;
 };
 
@@ -18,13 +17,11 @@ public:
 class DiffuseMaterial final : public Material
 {
 public:
-    DiffuseMaterial(glm::vec3 Albedo, glm::vec3 EmissionColor, float EmissionPower);
+    DiffuseMaterial(glm::vec3 Albedo);
 
     ScatterRays Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const override;
 private:
     glm::vec3 m_Albedo;
-    glm::vec3 m_EmissionColor;
-    float m_EmissionPower;
 };
 
 class MetalMaterial final : public Material

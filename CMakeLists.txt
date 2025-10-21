@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}
         src/render/Material.h
         src/utils/Timer.cpp
         src/utils/Timer.h
+        src/Input.h
+        src/Input.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

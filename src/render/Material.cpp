@@ -41,8 +41,8 @@ namespace Utils {
     }
 }
 
-DiffuseMaterial::DiffuseMaterial(const glm::vec3 Albedo, const glm::vec3 EmissionColor, const float EmissionPower)
-    : m_Albedo(Albedo), m_EmissionColor(EmissionColor), m_EmissionPower(EmissionPower) {
+DiffuseMaterial::DiffuseMaterial(const glm::vec3 Albedo)
+    : m_Albedo(Albedo) {
 }
 
 ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const {
@@ -56,7 +56,6 @@ ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayloa
     scattered.Ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001f;
     scattered.Ray.Direction = scatterDirection;
     scattered.Attenuation = m_Albedo;
-    scattered.Emission = m_EmissionPower * m_EmissionColor;
     scattered.Scattered = true;
     return scattered;
 }
@@ -73,7 +72,6 @@ ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload,
     scattered.Ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001f;
     scattered.Ray.Direction = reflected;
     scattered.Attenuation = m_Albedo;
-    scattered.Emission = glm::vec3(0.0f);
     scattered.Scattered = true;
     return scattered;
 }

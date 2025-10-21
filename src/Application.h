@@ -21,12 +21,9 @@ public:
 
     void OnRender();
 
-    void OnUpdate(float deltaTime);
+    void OnUpdate(float deltaTime) const;
 
     void OnCanvasResize(int width, int height) const;
-
-protected slots:
-    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
     std::unique_ptr<QApplication> m_QtApplication;

@@ -26,8 +26,6 @@ namespace Utils {
     }
 }
 
-uint32_t FRAMES_TO_ACCUMULATE = 200;
-
 Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
     : m_ImageData(nullptr), m_Width(0), m_Height(0), m_ActiveCamera(activeCamera), m_ActiveScene(activeScene) {
     OnResize(static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y));
@@ -99,11 +97,6 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     ResetFrameIndex();
 }
 
-glm::vec3 LIGHT_DIRECTION = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-glm::vec3 SKY_COLOR(0.6f, 0.7f, 0.9f);
-float SKY_BRIGHTNESS = 0.4f;
-float AMBIENT = 0.1f;
-
 glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
@@ -121,8 +114,7 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
     if (depth <= 0)
         return glm::vec3(0.0f, 0.0f, 0.0f);
 
-    const HitPayload hitPayload = traceRay(ray);
-    if (hitPayload.DidCollide) {
+    if (const HitPayload hitPayload = traceRay(ray); hitPayload.DidCollide) {
         const Hittable* hittable = m_ActiveScene->GetHittableObjects()[hitPayload.ObjectIndex].get();
         const Material* material = m_ActiveScene->GetMaterials()[hittable->GetMaterialIndex()].get();
 
@@ -131,9 +123,9 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
             return scatterRays.Attenuation * rayColor(scatterRays.Ray, depth-1, seed);
         }
     }
-
-
-    return  SKY_BRIGHTNESS * SKY_COLOR;
+    const glm::vec3 dir = glm::normalize(ray.Direction);
+    const auto a = 0.5f * (dir.y + 1.0f);
+    return (1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0);
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {

@@ -2,8 +2,8 @@
 
 #include <QKeyEvent>
 
+#include "Input.h"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/scalar_constants.hpp"
 
 float ROTATION_SPEED = 0.05f;
 float CAMERA_SPEED = 0.02f;
@@ -37,14 +37,14 @@ int Application::Run() {
 
 void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
-    // Blue Floor 1
-    m_Scene->Add(new DiffuseMaterial({0.2, 0.3, 1.0}, {0.0, 0.0, 0.0}, 0.0f));
+    // Green Floor 1
+    m_Scene->Add(new DiffuseMaterial({0.8, 0.8, 0.0}));
     // Pinky Sphere 2
-    m_Scene->Add(new DiffuseMaterial({1.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, 0.0f));
+    m_Scene->Add(new DiffuseMaterial({1.0, 0.0, 1.0}));
     // Emissive Sphere 3
-    m_Scene->Add(new DiffuseMaterial({0.8, 0.5, 0.2}, {0.8, 0.5, 0.2}, 20.0f));
-    // Green Cube 4
-    m_Scene->Add(new MetalMaterial({0.0, 1.0, 0.0}));
+    m_Scene->Add(new DiffuseMaterial({0.8, 0.5, 0.2}));
+    // Silver Cube 4
+    m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}));
 
     //Floor
     m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, {-1000.0f, 0.0f, -1000.0f}, 1));
@@ -69,7 +69,54 @@ void Application::OnRender() {
     OnUpdate(static_cast<float>(renderingStatus.FrameRenderTime));
 }
 
-void Application::OnUpdate(const float deltaTime) {
+void Application::OnUpdate(const float deltaTime) const {
+    bool cameraMoved = false;
+    if (Input::IsKeyPressed(Input::Key::W)) {
+        m_Camera->MoveForward(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::S)) {
+        m_Camera->MoveForward(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::D)) {
+        m_Camera->MoveRight(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::A)) {
+        m_Camera->MoveRight(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::E)) {
+        m_Camera->MoveUp(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::Q)) {
+        m_Camera->MoveUp(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::ArrowRight)) {
+        m_Camera->Yaw(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::ArrowLeft)) {
+        m_Camera->Yaw(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::ArrowUp)) {
+        m_Camera->Pitch(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+    if (Input::IsKeyPressed(Input::Key::ArrowDown)) {
+        m_Camera->Pitch(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        cameraMoved = true;
+    }
+
+    if (cameraMoved) {
+        m_Camera->Refresh();
+        m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
+        m_Renderer->ResetFrameIndex();
+    }
 }
 
 void Application::OnCanvasResize(const int width, const int height) const {
@@ -77,64 +124,6 @@ void Application::OnCanvasResize(const int width, const int height) const {
         m_Renderer->OnResize(width, height);
         m_Camera->OnResize(width, height);
     }
-}
-
-bool Application::eventFilter(QObject *obj, QEvent *event) {
-    if (event->type() == QEvent::KeyPress) {
-        bool cameraMoved = false;
-        const auto *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_S) {
-            m_Camera->MoveForward(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_W) {
-            m_Camera->MoveForward(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_D) {
-            m_Camera->MoveRight(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_A) {
-            m_Camera->MoveRight(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_E) {
-            m_Camera->MoveUp(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_Q) {
-            m_Camera->MoveUp(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_Right) {
-            m_Camera->Yaw(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_Left) {
-            m_Camera->Yaw(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_Up) {
-            m_Camera->Pitch(static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (keyEvent->key() == Qt::Key_Down) {
-            m_Camera->Pitch(-static_cast<float>(m_RenderTimeMs) * CAMERA_SPEED);
-            cameraMoved = true;
-        }
-        if (cameraMoved) {
-            m_Camera->Refresh();
-            m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
-            m_Renderer->ResetFrameIndex();
-        }
-        return false;
-    }
-    if (event->type() == QEvent::MouseButtonPress) {
-        auto *mouseEvent = static_cast<QMouseEvent *>(event);
-        qDebug() << "Global click at:" << mouseEvent->position();
-    }
-    return QObject::eventFilter(obj, event);
 }
 
 void Application::addBox(int materialIndex) {
