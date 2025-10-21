@@ -6,7 +6,8 @@
 #include "glm/ext/matrix_transform.hpp"
 
 float ROTATION_SPEED = 0.05f;
-float CAMERA_SPEED = 0.02f;
+float CAMERA_MOVE_SPEED = 0.02f;
+float CAMERA_ROTATION_SPEED = 0.002f;
 
 Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_QtApplication = std::make_unique<QApplication>(argc, argv);
@@ -72,43 +73,43 @@ void Application::OnRender() {
 void Application::OnUpdate(const float deltaTime) const {
     bool cameraMoved = false;
     if (Input::IsKeyPressed(Input::Key::W)) {
-        m_Camera->MoveForward(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveForward(static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::S)) {
-        m_Camera->MoveForward(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveForward(-static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::D)) {
-        m_Camera->MoveRight(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveRight(static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::A)) {
-        m_Camera->MoveRight(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveRight(-static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::E)) {
-        m_Camera->MoveUp(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveUp(static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::Q)) {
-        m_Camera->MoveUp(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->MoveUp(-static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::ArrowRight)) {
-        m_Camera->Yaw(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->Yaw(static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::ArrowLeft)) {
-        m_Camera->Yaw(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->Yaw(-static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::ArrowUp)) {
-        m_Camera->Pitch(static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->Pitch(static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
     if (Input::IsKeyPressed(Input::Key::ArrowDown)) {
-        m_Camera->Pitch(-static_cast<float>(deltaTime) * CAMERA_SPEED);
+        m_Camera->Pitch(-static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
 

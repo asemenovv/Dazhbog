@@ -67,7 +67,7 @@ MetalMaterial::MetalMaterial(glm::vec3 Albedo): m_Albedo(Albedo)
 ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const
 {
     ScatterRays scattered{};
-    glm::vec3 reflected = glm::reflect(ray.Direction, hitPayload.WorldNormal);
+    const glm::vec3 reflected = glm::reflect(ray.Direction, hitPayload.WorldNormal);
 
     scattered.Ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001f;
     scattered.Ray.Direction = reflected;

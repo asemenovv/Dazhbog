@@ -56,12 +56,12 @@ void Camera::RecalculateRayDirections() {
 }
 
 void Camera::MoveForward(const float stepAmount) {
-    m_Position -= m_ForwardDirection * stepAmount;
+    m_Position -= glm::normalize(m_ForwardDirection) * stepAmount;
 }
 
 void Camera::MoveRight(const float stepAmount) {
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
-    const glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
+    const glm::vec3 rightDirection = glm::normalize(glm::cross(m_ForwardDirection, upDirection));
     m_Position += rightDirection * stepAmount;
 }
 
@@ -74,19 +74,20 @@ void Camera::MoveUp(const float stepAmount)
 void Camera::Pitch(const float angle)
 {
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
-    const glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
+    const glm::vec3 rightDirection = glm::normalize(glm::cross(upDirection, m_ForwardDirection));
     const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, rightDirection);
-    m_ForwardDirection = glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f));
+    m_ForwardDirection = glm::normalize(glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f)));
 }
 
 void Camera::Yaw(const float angle)
 {
-    const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 1, 0));
-    m_ForwardDirection = glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f));
+    constexpr glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
+    const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, worldUp);
+    m_ForwardDirection = glm::normalize(glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f)));
 }
 
 void Camera::Refresh()
 {
-    RecalculateRayDirections();
     RecalculateView();
+    RecalculateRayDirections();
 }
