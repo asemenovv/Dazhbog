@@ -6,14 +6,16 @@ Scene::Scene() {
     Add(new DiffuseMaterial({0.2, 0.2, 0.2}));
 }
 
-void Scene::Add(Hittable* sphere)
+uint32_t Scene::Add(Hittable* sphere)
 {
     m_HittableObjects.emplace_back(std::unique_ptr<Hittable>(sphere));
+    return m_HittableObjects.size() - 1;
 }
 
-void Scene::Add(Material *material)
+uint32_t Scene::Add(Material *material)
 {
     m_Materials.emplace_back(std::unique_ptr<Material>(material));
+    return m_Materials.size() - 1;
 }
 
 std::vector<std::unique_ptr<Hittable>>& Scene::GetHittableObjects()

@@ -38,29 +38,31 @@ int Application::Run() {
 
 void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
-    // Green Floor 1
-    m_Scene->Add(new DiffuseMaterial({0.8, 0.8, 0.0}));
-    // Pinky Sphere 2
-    m_Scene->Add(new DiffuseMaterial({1.0, 0.0, 1.0}));
-    // Emissive Sphere 3
-    m_Scene->Add(new DiffuseMaterial({0.8, 0.5, 0.2}));
-    // Silver Cube 4
-    m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}));
-    // Golden Cube 5
-    m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}));
+    const auto greenMat = m_Scene->Add(new DiffuseMaterial({0.8, 0.8, 0.0}));
+    const auto blueMat = m_Scene->Add(new DiffuseMaterial({0.1, 0.2, 0.5}));
+    const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}));
+    const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}));
 
     //Floor
-    m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, {-1000.0f, 0.0f, -1000.0f}, 1));
-    m_Scene->Add(new Triangle({-1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, 1000.0f}, {1000.0f, 0.0f, -1000.0f}, 1));
+    m_Scene->Add(new Triangle(
+        {-1000.0f, 0.0f, 1000.0f},
+        {1000.0f, 0.0f, -1000.0f},
+        {-1000.0f, 0.0f, -1000.0f},
+        greenMat));
+    m_Scene->Add(new Triangle(
+        {-1000.0f, 0.0f, 1000.0f},
+        {1000.0f, 0.0f, 1000.0f},
+        {1000.0f, 0.0f, -1000.0f},
+        greenMat));
 
-    m_Scene->Add(new Sphere(2.0f, 2, glm::vec3(0.0f, 2.0f, 0.0f)));
-    m_Scene->Add(new Sphere(10.0f, 2, glm::vec3(30.0f, 20.0f, -20.0f)));
+    m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
+    // m_Scene->Add(new Sphere(10.0f, 2, glm::vec3(30.0f, 20.0f, -20.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
     constexpr glm::mat4 translateSilver = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});
     constexpr glm::mat4 translateGold = glm::translate(glm::mat4(1.0), {-20.0f, 5.0f, 20.0f});
-    m_Scene->Add(new Cube(translateSilver * scale, 4));
-    m_Scene->Add(new Cube(translateGold * scale, 5));
+    m_Scene->Add(new Cube(translateSilver * scale, silverMat));
+    m_Scene->Add(new Cube(translateGold * scale, goldenMat));
 }
 
 void Application::OnRender() {

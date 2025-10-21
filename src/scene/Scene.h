@@ -12,9 +12,9 @@ public:
 
     ~Scene() = default;
 
-    void Add(Hittable *sphere);
+    uint32_t Add(Hittable *sphere);
 
-    void Add(Material *material);
+    uint32_t Add(Material *material);
 
     [[nodiscard]] std::vector<std::unique_ptr<Hittable> > &GetHittableObjects();
 
