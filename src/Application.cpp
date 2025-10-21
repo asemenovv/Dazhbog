@@ -38,10 +38,11 @@ int Application::Run() {
 
 void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
-    const auto greenMat = m_Scene->Add(new DiffuseMaterial({0.8, 0.8, 0.0}));
-    const auto blueMat = m_Scene->Add(new DiffuseMaterial({0.1, 0.2, 0.5}));
+    const auto greenMat = m_Scene->Add(new LambertMaterial({0.8, 0.8, 0.0}));
+    const auto blueMat = m_Scene->Add(new LambertMaterial({0.1, 0.2, 0.5}));
     const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}, 0.04));
     const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}, 0.0));
+    const auto lightMat = m_Scene->Add(new DiffuseLightMaterial({1.0, 0.706, 0.422}, 10.0));
 
     //Floor
     m_Scene->Add(new Triangle(
@@ -56,6 +57,7 @@ void Application::SetupScene() {
         greenMat));
 
     m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
+    m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, 0.0f)));
     // m_Scene->Add(new Sphere(10.0f, 2, glm::vec3(30.0f, 20.0f, -20.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});

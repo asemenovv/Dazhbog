@@ -4,6 +4,9 @@
 #include "wallnut/Random.h"
 
 #if MT_RENDERING
+#ifdef emit
+#  undef emit
+#endif
 #include <tbb/parallel_for.h>
 #endif
 
@@ -49,7 +52,6 @@ Renderer::RenderingStatus Renderer::Render() {
     }
     m_FrameRenderTimer->Start();
 
-#define MT_RENDERING 0
 #if MT_RENDERING
     tbb::parallel_for<int>(0, m_Height, 1, [this](const int y) {
 #else
@@ -122,10 +124,13 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
         if (scatterRays.Scattered) {
             return scatterRays.Attenuation * rayColor(scatterRays.Ray, depth-1, seed);
         }
+        return scatterRays.Emission;
     }
-    const glm::vec3 dir = glm::normalize(ray.Direction);
-    const auto a = 0.5f * (dir.y + 1.0f);
-    return (1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0);
+
+    // const glm::vec3 dir = glm::normalize(ray.Direction);
+    // const auto a = 0.5f * (dir.y + 1.0f);
+    // return (1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0);
+    return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {

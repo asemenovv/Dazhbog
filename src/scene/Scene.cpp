@@ -3,7 +3,7 @@
 #include "render/Material.h"
 
 Scene::Scene() {
-    Add(new DiffuseMaterial({0.2, 0.2, 0.2}));
+    Add(new LambertMaterial({0.2, 0.2, 0.2}));
 }
 
 uint32_t Scene::Add(Hittable* sphere)

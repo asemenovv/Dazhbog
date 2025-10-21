@@ -43,11 +43,11 @@ namespace Utils {
     }
 }
 
-DiffuseMaterial::DiffuseMaterial(const glm::vec3 Albedo)
+LambertMaterial::LambertMaterial(const glm::vec3 Albedo)
     : m_Albedo(Albedo) {
 }
 
-ScatterRays DiffuseMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const {
+ScatterRays LambertMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const {
     ScatterRays scattered{};
     glm::vec3 scatterDirection = hitPayload.WorldNormal + Utils::InUnitSphere(randomSeed);
     if (glm::all(glm::epsilonEqual(scatterDirection, glm::vec3(0.0), Utils::Epsilon)))
@@ -79,4 +79,15 @@ ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload,
     scattered.Attenuation = m_Albedo;
     scattered.Scattered = glm::dot(scattered.Ray.Direction, normalWithOffset) > 0.0f;
     return scattered;
+}
+
+DiffuseLightMaterial::DiffuseLightMaterial(const glm::vec3 emissionColor, const float emissionPower)
+    : m_EmissionColor(emissionColor), m_EmissionPower(emissionPower) {
+}
+
+ScatterRays DiffuseLightMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t &randomSeed) const {
+    return {
+        .Scattered = false,
+        .Emission = m_EmissionPower * m_EmissionColor
+    };
 }

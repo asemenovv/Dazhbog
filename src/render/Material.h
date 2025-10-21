@@ -4,7 +4,8 @@
 struct ScatterRays {
     Ray Ray{};
     glm::vec3 Attenuation;
-    bool Scattered = false;
+    bool Scattered = true;
+    glm::vec3 Emission = { 0.0f, 0.0f, 0.0f };
 };
 
 class Material {
@@ -14,10 +15,10 @@ public:
     virtual ScatterRays Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const = 0;
 };
 
-class DiffuseMaterial final : public Material
+class LambertMaterial final : public Material
 {
 public:
-    explicit DiffuseMaterial(glm::vec3 Albedo);
+    explicit LambertMaterial(glm::vec3 Albedo);
 
     ScatterRays Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t& randomSeed) const override;
 private:
@@ -33,4 +34,15 @@ public:
 private:
     glm::vec3 m_Albedo;
     float m_Fuzziness;
+};
+
+class DiffuseLightMaterial final : public Material
+{
+public:
+    explicit DiffuseLightMaterial(glm::vec3 emissionColor, float emissionPower);
+
+    ScatterRays Scatter(const Ray& ray, const HitPayload& hitPayload, uint32_t& randomSeed) const override;
+private:
+    glm::vec3 m_EmissionColor;
+    float m_EmissionPower;
 };

@@ -9,14 +9,14 @@
 #include "scene/Scene.h"
 #include "utils/Timer.h"
 
-#define MT_RENDERING 0
+#define MT_RENDERING 1
 
 class Renderer {
 public:
     struct Settings
     {
         bool Accumulate = true;
-        uint32_t FramesToAccumulate = 200;
+        uint32_t FramesToAccumulate = 500;
     };
     struct RenderingStatus
     {
