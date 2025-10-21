@@ -13,22 +13,6 @@
 
 #include "utils/Timer.h"
 
-namespace Utils {
-    static double LinearToGamma(const double linearComponent)
-    {
-        if (linearComponent > 0)
-            return std::sqrt(linearComponent);
-        return 0;
-    }
-
-    static uint32_t Vec4ToRGBA8(const glm::vec4 color) {
-        const auto r = static_cast<uint8_t>(LinearToGamma(color.r) * 255.0f);
-        const auto g = static_cast<uint8_t>(LinearToGamma(color.g) * 255.0f);
-        const auto b = static_cast<uint8_t>(LinearToGamma(color.b) * 255.0f);
-        const auto a = static_cast<uint8_t>(color.a * 255.0f);
-        return a << 24 | b << 16 | g << 8 | r;
-    }
-}
 
 Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 viewportSize)
     : m_ImageData(nullptr), m_Width(0), m_Height(0), m_ActiveCamera(activeCamera), m_ActiveScene(activeScene) {
@@ -48,7 +32,7 @@ Renderer::RenderingStatus Renderer::Render() {
         };
     }
     if (m_FrameIndex == 1) {
-        memset(m_AccumulationData, 0, m_Width * m_Height * sizeof(glm::vec4));
+        m_AccumulationData.ZeroAll();
         m_SceneRenderTimer->Start();
     }
     m_FrameRenderTimer->Start();
@@ -62,13 +46,7 @@ Renderer::RenderingStatus Renderer::Render() {
         for (int x = 0; x < m_Width; x++)
         {
             const glm::vec4 color = perPixel(x, y);
-            m_AccumulationData[x + y * m_Width] += color;
-
-            glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_Width];
-            accumulatedColor /= static_cast<float>(m_FrameIndex);
-
-            accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0), glm::vec4(1.0f));
-            m_ImageData[y * m_Width + x] = Utils::Vec4ToRGBA8(accumulatedColor);
+            m_AccumulationData.AddColor(x, y, color);
         }
     }
 #if MT_RENDERING
@@ -88,6 +66,20 @@ Renderer::RenderingStatus Renderer::Render() {
     };
 }
 
+std::uint32_t * Renderer::GetFinalImageData() {
+    Image firstBuffer = {};
+    Image secondBuffer = {};
+    firstBuffer.Resize(m_Width, m_Height);
+    secondBuffer.Resize(m_Width, m_Height);
+
+    auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
+    auto gammaProcessor = GammaCorrectionProcessor();
+    avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
+    gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
+    secondBuffer.ToRGBA8(m_ImageData);
+    return m_ImageData;
+}
+
 void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     m_Width = width;
     m_Height = height;
@@ -95,8 +87,7 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     delete[] m_ImageData;
     m_ImageData = new std::uint32_t[width * height];
 
-    delete[] m_AccumulationData;
-    m_AccumulationData = new glm::vec4[width * height];
+    m_AccumulationData.Resize(width, height);
 
     ResetFrameIndex();
 }

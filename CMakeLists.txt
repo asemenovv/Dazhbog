@@ -31,6 +31,8 @@ add_executable(${PROJECT_NAME}
         src/utils/Timer.h
         src/Input.h
         src/Input.cpp
+        src/render/ImagePostProcessors.cpp
+        src/render/ImagePostProcessors.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

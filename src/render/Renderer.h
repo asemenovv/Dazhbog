@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include "Camera.h"
+#include "ImagePostProcessors.h"
 #include "math/Geometry.h"
 #include "scene/Scene.h"
 #include "utils/Timer.h"
@@ -30,9 +31,9 @@ public:
 
     RenderingStatus Render();
 
-    void OnResize(uint32_t width, uint32_t height);
+    [[nodiscard]] std::uint32_t* GetFinalImageData();
 
-    [[nodiscard]] std::uint32_t* GetFinalImageData() const { return m_ImageData; }
+    void OnResize(uint32_t width, uint32_t height);
 
     void ResetFrameIndex() { m_FrameIndex = 1; }
 
@@ -47,7 +48,7 @@ private:
     Settings m_Settings;
 
     std::uint32_t*  m_ImageData;
-    glm::vec4* m_AccumulationData;
+    Image m_AccumulationData;
     uint32_t m_Width, m_Height;
     uint32_t m_FrameIndex = 1;
 
