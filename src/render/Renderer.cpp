@@ -62,7 +62,9 @@ Renderer::RenderingStatus Renderer::Render() {
 );
 #endif
 
-    prepareFrame(false);
+    if (m_FrameIndex % 10 == 0 || m_FrameIndex == 1) {
+        prepareFrame(true);
+    }
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
     } else {
@@ -105,7 +107,7 @@ glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     return {rayColor, 1.0f};
 }
 
-glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
+glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) const {
     if (depth <= 0)
         return glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -120,10 +122,10 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
         return scatterRays.Emission;
     }
 
-    // const glm::vec3 dir = glm::normalize(ray.Direction);
-    // const auto a = 0.5f * (dir.y + 1.0f);
-    // return 0.1f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
-    return {0.0f, 0.0f, 0.0f};
+    const glm::vec3 dir = glm::normalize(ray.Direction);
+    const auto a = 0.5f * (dir.y + 1.0f);
+    return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    // return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {
@@ -149,7 +151,7 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
 
         auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
         auto gammaProcessor = GammaCorrectionProcessor();
-        auto hdrProcessor = HDRProcessor(0.5);
+        auto hdrProcessor = HDRProcessor(-0.5);
         auto toneMapper = TonemapACESProcessor();
         avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
         hdrProcessor.ProcessImage(firstBuffer, secondBuffer);

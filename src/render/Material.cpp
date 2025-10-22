@@ -2,6 +2,7 @@
 
 #include "glm/ext/scalar_constants.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include "math/ColorUtils.h"
 
 namespace Utils {
     float Epsilon = 1e-8f;
@@ -82,7 +83,7 @@ ScatterRays MetalMaterial::Scatter(const Ray& ray, const HitPayload& hitPayload,
 }
 
 DiffuseLightMaterial::DiffuseLightMaterial(const glm::vec3 emissionColor, const float emissionPower)
-    : m_EmissionColor(emissionColor), m_EmissionPower(emissionPower) {
+    : m_EmissionColor(ColorUtils::SRGBToLinear(emissionColor)), m_EmissionPower(emissionPower) {
 }
 
 ScatterRays DiffuseLightMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t &randomSeed) const {

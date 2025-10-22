@@ -57,7 +57,7 @@ void Application::SetupScene() {
         greenMat));
 
     m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
-    m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
+    // m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
     constexpr glm::mat4 translateSilver = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});

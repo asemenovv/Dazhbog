@@ -29,7 +29,7 @@ void GammaCorrectionProcessor::ProcessImage(Image &input, Image &output) {
     }
 }
 
-HDRProcessor::HDRProcessor(float exposure): m_Exposure(exposure) {
+HDRProcessor::HDRProcessor(const float exposure): m_Exposure(exposure) {
 }
 
 void HDRProcessor::ProcessImage(Image &input, Image &output) {
