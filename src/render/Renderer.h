@@ -17,7 +17,7 @@ public:
     struct Settings
     {
         bool Accumulate = true;
-        uint32_t FramesToAccumulate = 500;
+        uint32_t FramesToAccumulate = 300;
     };
     struct RenderingStatus
     {
@@ -31,11 +31,14 @@ public:
 
     RenderingStatus Render();
 
-    [[nodiscard]] std::uint32_t* GetFinalImageData();
+    [[nodiscard]] std::uint32_t* GetFinalImageData() const;
 
     void OnResize(uint32_t width, uint32_t height);
 
-    void ResetFrameIndex() { m_FrameIndex = 1; }
+    void ResetFrameIndex() {
+        m_IsRenderingFinished = false;
+        m_FrameIndex = 1;
+    }
 
     Settings GetSettings() const { return m_Settings; }
 private:
@@ -44,6 +47,8 @@ private:
     glm::vec3 rayColor(const Ray& ray, int depth, uint32_t &seed) const;
 
     HitPayload traceRay(const Ray& ray) const;
+
+    void prepareFrame(bool applyPostProcessors);
 
     Settings m_Settings;
 
@@ -57,4 +62,6 @@ private:
 
     std::unique_ptr<Utils::Timer> m_SceneRenderTimer;
     std::unique_ptr<Utils::Timer> m_FrameRenderTimer;
+
+    bool m_IsRenderingFinished = false;
 };

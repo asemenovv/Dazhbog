@@ -22,8 +22,17 @@ Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 vie
 }
 
 Renderer::RenderingStatus Renderer::Render() {
+    if (m_IsRenderingFinished) return{
+        .FrameIndex = m_FrameIndex,
+        .RenderFinished = true,
+        .SceneRenderTime = m_SceneRenderTimer->StopAndGetTime(),
+        .FrameRenderTime = 0,
+    };
+
     if (m_FrameIndex >= m_Settings.FramesToAccumulate)
     {
+        prepareFrame(true);
+        m_IsRenderingFinished = true;
         return {
             .FrameIndex = m_FrameIndex,
             .RenderFinished = true,
@@ -53,6 +62,7 @@ Renderer::RenderingStatus Renderer::Render() {
 );
 #endif
 
+    prepareFrame(false);
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
     } else {
@@ -66,17 +76,7 @@ Renderer::RenderingStatus Renderer::Render() {
     };
 }
 
-std::uint32_t * Renderer::GetFinalImageData() {
-    Image firstBuffer = {};
-    Image secondBuffer = {};
-    firstBuffer.Resize(m_Width, m_Height);
-    secondBuffer.Resize(m_Width, m_Height);
-
-    auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
-    auto gammaProcessor = GammaCorrectionProcessor();
-    avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
-    gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
-    secondBuffer.ToRGBA8(m_ImageData);
+std::uint32_t* Renderer::GetFinalImageData() const {
     return m_ImageData;
 }
 
@@ -120,10 +120,10 @@ glm::vec3 Renderer::rayColor(const Ray &ray, int depth, uint32_t &seed) const {
         return scatterRays.Emission;
     }
 
-    const glm::vec3 dir = glm::normalize(ray.Direction);
-    const auto a = 0.5f * (dir.y + 1.0f);
-    return 0.1f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
-    // return {0.0f, 0.0f, 0.0f};
+    // const glm::vec3 dir = glm::normalize(ray.Direction);
+    // const auto a = 0.5f * (dir.y + 1.0f);
+    // return 0.1f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {
@@ -138,4 +138,31 @@ HitPayload Renderer::traceRay(const Ray& ray) const {
         }
     }
     return nearestHitPayload;
+}
+
+void Renderer::prepareFrame(const bool applyPostProcessors) {
+    if (applyPostProcessors) {
+        Image firstBuffer = {};
+        Image secondBuffer = {};
+        firstBuffer.Resize(m_Width, m_Height);
+        secondBuffer.Resize(m_Width, m_Height);
+
+        auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
+        auto gammaProcessor = GammaCorrectionProcessor();
+        auto hdrProcessor = HDRProcessor(0.5);
+        auto toneMapper = TonemapACESProcessor();
+        avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
+        hdrProcessor.ProcessImage(firstBuffer, secondBuffer);
+        toneMapper.ProcessImage(secondBuffer, firstBuffer);
+        gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
+        secondBuffer.ToRGBA8(m_ImageData);
+    } else {
+        Image firstBuffer = {};
+        firstBuffer.Resize(m_Width, m_Height);
+
+        auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
+        avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
+
+        firstBuffer.ToRGBA8(m_ImageData);
+    }
 }

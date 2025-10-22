@@ -57,7 +57,7 @@ public:
 
 class AverageFramesProcessor final : public ImagePostProcessor {
 public:
-    AverageFramesProcessor(uint32_t frameIndex);
+    explicit AverageFramesProcessor(uint32_t frameIndex);
 
     void ProcessImage(Image &input, Image &output) override;
 private:
@@ -69,7 +69,20 @@ public:
     GammaCorrectionProcessor() = default;
 
     void ProcessImage(Image &input, Image &output) override;
+};
 
+class HDRProcessor final : public ImagePostProcessor {
+public:
+    explicit HDRProcessor(float exposure);
+
+    void ProcessImage(Image &input, Image &output) override;
 private:
-    static double linearToGamma(double linearComponent);
+    float m_Exposure;
+};
+
+class TonemapACESProcessor final : public ImagePostProcessor {
+public:
+    TonemapACESProcessor() = default;
+
+    void ProcessImage(Image &input, Image &output) override;
 };

@@ -42,7 +42,7 @@ void Application::SetupScene() {
     const auto blueMat = m_Scene->Add(new LambertMaterial({0.1, 0.2, 0.5}));
     const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}, 0.04));
     const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}, 0.0));
-    const auto lightMat = m_Scene->Add(new DiffuseLightMaterial({1.0, 0.706, 0.422}, 10.0));
+    const auto lightMat = m_Scene->Add(new DiffuseLightMaterial({1.0, 0.706, 0.422}, 1.0));
 
     //Floor
     m_Scene->Add(new Triangle(
