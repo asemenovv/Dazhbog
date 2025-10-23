@@ -66,9 +66,11 @@ private:
 
 class GammaCorrectionProcessor final : public ImagePostProcessor {
 public:
-    GammaCorrectionProcessor() = default;
+    explicit GammaCorrectionProcessor(float gamma = 2.2f);
 
     void ProcessImage(Image &input, Image &output) override;
+private:
+    float m_Gamma;
 };
 
 class HDRProcessor final : public ImagePostProcessor {
@@ -85,4 +87,20 @@ public:
     TonemapACESProcessor() = default;
 
     void ProcessImage(Image &input, Image &output) override;
+};
+
+class BloomProcessor final : public ImagePostProcessor {
+public:
+    explicit BloomProcessor(float threshold, uint32_t levels);
+
+    void ProcessImage(Image &input, Image &output) override;
+private:
+    float luminance(const glm::vec3& color);
+
+    void brightPass(const Image &input, const Image &output);
+
+    void downsample2x(const Image &input, const Image &output);
+
+    float m_Threshold;
+    uint32_t m_Levels;
 };

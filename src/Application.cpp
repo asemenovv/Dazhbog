@@ -29,6 +29,11 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
+    m_Renderer->GetSettings().Exposure = 4.0f;
+    m_Renderer->GetSettings().FramesToAccumulate = 500;
+    m_Renderer->GetSettings().RayBounces = 10;
+    m_Renderer->GetSettings().BloomThreshold = 0.5f;
+    m_Renderer->GetSettings().BloomLevels = 4;
 }
 
 int Application::Run() {
@@ -57,7 +62,7 @@ void Application::SetupScene() {
         greenMat));
 
     m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
-    // m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
+    m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
     constexpr glm::mat4 translateSilver = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});

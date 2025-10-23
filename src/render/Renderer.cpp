@@ -102,8 +102,7 @@ glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     uint32_t seed = x + m_Width * y;
     seed *= m_FrameIndex;
 
-    constexpr int BOUNCES = 5;
-    auto rayColor = this->rayColor(ray, BOUNCES, seed);
+    auto rayColor = this->rayColor(ray, m_Settings.RayBounces, seed);
     return {rayColor, 1.0f};
 }
 
@@ -122,10 +121,10 @@ glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) co
         return scatterRays.Emission;
     }
 
-    const glm::vec3 dir = glm::normalize(ray.Direction);
-    const auto a = 0.5f * (dir.y + 1.0f);
-    return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
-    // return {0.0f, 0.0f, 0.0f};
+    // const glm::vec3 dir = glm::normalize(ray.Direction);
+    // const auto a = 0.5f * (dir.y + 1.0f);
+    // return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {
@@ -150,13 +149,15 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
         secondBuffer.Resize(m_Width, m_Height);
 
         auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
-        auto gammaProcessor = GammaCorrectionProcessor();
-        auto hdrProcessor = HDRProcessor(-0.5);
+        auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
+        auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
         auto toneMapper = TonemapACESProcessor();
+        auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels);
         avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
-        hdrProcessor.ProcessImage(firstBuffer, secondBuffer);
-        toneMapper.ProcessImage(secondBuffer, firstBuffer);
-        gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
+        bloomFilter.ProcessImage(firstBuffer, secondBuffer);
+        hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
+        toneMapper.ProcessImage(firstBuffer, secondBuffer);
+        gammaProcessor.ProcessImage(secondBuffer, firstBuffer);
         secondBuffer.ToRGBA8(m_ImageData);
     } else {
         Image firstBuffer = {};

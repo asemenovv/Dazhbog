@@ -18,6 +18,11 @@ public:
     {
         bool Accumulate = true;
         uint32_t FramesToAccumulate = 300;
+        float Gamma = 2.2f;
+        float Exposure = 0.0f;
+        uint32_t RayBounces = 5;
+        float BloomThreshold = 1.0f;
+        uint32_t BloomLevels;
     };
     struct RenderingStatus
     {
@@ -40,7 +45,7 @@ public:
         m_FrameIndex = 1;
     }
 
-    Settings GetSettings() const { return m_Settings; }
+    Settings& GetSettings() { return m_Settings; }
 private:
     glm::vec4 perPixel(uint32_t x, uint32_t y) const; // like RayGen shader
 
