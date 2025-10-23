@@ -20,3 +20,6 @@
 [submodule "deps/oneTBB"]
 	path = deps/oneTBB
 	url = https://github.com/oneapi-src/oneTBB.git
+[submodule "deps/libpng"]
+	path = deps/libpng
+	url = https://github.com/pnggroup/libpng.git

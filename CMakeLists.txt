@@ -41,9 +41,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)
 set(TBB_TEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(deps/oneTBB)
 add_subdirectory(deps/glm)
-add_subdirectory(deps/stb_image_wrapper)
+add_subdirectory(deps/libpng)
 
 target_link_libraries(${PROJECT_NAME}
+        PRIVATE png_framework
         PRIVATE Qt6::Widgets
         PRIVATE glm::glm
         PRIVATE TBB::tbb

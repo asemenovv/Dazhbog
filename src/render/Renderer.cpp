@@ -94,6 +94,12 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     ResetFrameIndex();
 }
 
+void Renderer::DumpFramesToDisc(const std::string& folder)
+{
+    m_DumpFolder = folder;
+    m_DumpFramesToDisc = true;
+}
+
 glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
     Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
@@ -152,10 +158,15 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
         auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
         auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
         auto toneMapper = TonemapACESProcessor();
-        auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels);
+        auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
+            m_Settings.BloomSigma, m_Settings.BloomIntensity);
         avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
-        bloomFilter.ProcessImage(firstBuffer, secondBuffer);
-        hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            firstBuffer.WritePng(m_DumpFolder + "/AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
+        }
+        // bloomFilter.ProcessImage(firstBuffer, secondBuffer);
+        // hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
         toneMapper.ProcessImage(firstBuffer, secondBuffer);
         gammaProcessor.ProcessImage(secondBuffer, firstBuffer);
         secondBuffer.ToRGBA8(m_ImageData);
@@ -168,4 +179,5 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
 
         firstBuffer.ToRGBA8(m_ImageData);
     }
+    m_DumpFramesToDisc = false;
 }

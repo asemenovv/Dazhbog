@@ -22,7 +22,10 @@ public:
         float Exposure = 0.0f;
         uint32_t RayBounces = 5;
         float BloomThreshold = 1.0f;
-        uint32_t BloomLevels;
+        int BloomLevels = 4;
+        int BloomRadius = 6;
+        float BloomSigma = 4.0f;
+        float BloomIntensity = 0.6f;
     };
     struct RenderingStatus
     {
@@ -46,6 +49,9 @@ public:
     }
 
     Settings& GetSettings() { return m_Settings; }
+
+    void DumpFramesToDisc(const std::string& folder);
+
 private:
     glm::vec4 perPixel(uint32_t x, uint32_t y) const; // like RayGen shader
 
@@ -69,4 +75,6 @@ private:
     std::unique_ptr<Utils::Timer> m_FrameRenderTimer;
 
     bool m_IsRenderingFinished = false;
+    bool m_DumpFramesToDisc = false;
+    std::string m_DumpFolder;
 };

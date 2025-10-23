@@ -9,9 +9,18 @@
 class MainWindow final : public QMainWindow {
     Q_OBJECT
 public:
+    enum class ButtonAction
+    {
+        Dump
+    };
+
     using ResizeHandler = std::function<void(int,int)>;
 
+    using ButtonHandler = std::function<void(ButtonAction)>;
+
     explicit MainWindow(const ResizeHandler &resizeHandler, QWidget* parent = nullptr);
+
+    void SetButtonHandler(const ButtonHandler& handler);
 
     void UpdateFrame(uint32_t frameNo);
 
@@ -25,7 +34,7 @@ public:
 
 private slots:
     void resizeEvent(QResizeEvent* event) override;
-    void onRenderClicked();
+    void onDumpClicked() const;
 private:
     void setupUi();
 
@@ -36,4 +45,5 @@ private:
     QLabel* m_CameraPositionLabel = nullptr;
     QLabel* m_CameraDirectionLabel = nullptr;
     ResizeHandler m_ResizeHandler;
+    ButtonHandler m_ButtonHandler;
 };

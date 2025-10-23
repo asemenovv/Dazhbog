@@ -27,6 +27,13 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_Camera = std::make_unique<Camera>(45.0, 0.1, 100.0, m_Window->GetCanvasSize());
     m_Camera->PlaceInWorld({0.4, 4.3, 11}, {0.2, 0.4, 0.9});
     m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
+    m_Window->SetButtonHandler([this](const MainWindow::ButtonAction action)
+    {
+        if (action == MainWindow::ButtonAction::Dump)
+        {
+            m_Renderer->DumpFramesToDisc("/Users/463536/CLionProjects/Dazhbog/dump");
+        }
+    });
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
     m_Renderer->GetSettings().Exposure = 4.0f;

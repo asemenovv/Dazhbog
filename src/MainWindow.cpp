@@ -17,6 +17,11 @@ MainWindow::MainWindow(const ResizeHandler &resizeHandler, QWidget* parent) : QM
     statusBar()->showMessage("Ready");
 }
 
+void MainWindow::SetButtonHandler(const ButtonHandler& handler)
+{
+    m_ButtonHandler = handler;
+}
+
 void MainWindow::UpdateRenderTime(const int64_t frameRenderTime, const int64_t sceneRenderTime) {
     m_FrameRenderTimeLabel->setText(QString("Frame Render Time: %1 ms").arg(frameRenderTime));
     m_SceneRenderTimeLabel->setText(QString("Scene Render Time: %1 ms").arg(sceneRenderTime));
@@ -50,7 +55,12 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
 }
 
-void MainWindow::onRenderClicked() {
+void MainWindow::onDumpClicked() const
+{
+    if (m_ButtonHandler)
+    {
+        m_ButtonHandler(ButtonAction::Dump);
+    }
 }
 
 void MainWindow::setupUi() {
@@ -64,8 +74,8 @@ void MainWindow::setupUi() {
     rightLayout->setContentsMargins(8, 8, 8, 8);
     rightLayout->setSpacing(8);
 
-    auto* renderBtn = new QPushButton("Render", rightPanel);
-    renderBtn->setObjectName("btnRender");
+    auto* dumpBtn = new QPushButton("Dump", rightPanel);
+    dumpBtn->setObjectName("btnDump");
 
     m_FrameLabel = new QLabel("Current Frame: -", rightPanel);
     m_FrameRenderTimeLabel = new QLabel("Frame Render time: –", rightPanel);
@@ -73,7 +83,7 @@ void MainWindow::setupUi() {
     m_CameraPositionLabel = new QLabel("Camera Position: –", rightPanel);
     m_CameraDirectionLabel = new QLabel("Camera Direction: –", rightPanel);
 
-    rightLayout->addWidget(renderBtn);
+    rightLayout->addWidget(dumpBtn);
     rightLayout->addWidget(m_FrameLabel);
     rightLayout->addWidget(m_FrameRenderTimeLabel);
     rightLayout->addWidget(m_SceneRenderTimeLabel);
@@ -90,5 +100,5 @@ void MainWindow::setupUi() {
 
     setWindowTitle("Dazhbog");
 
-    connect(renderBtn, &QPushButton::clicked, this, &MainWindow::onRenderClicked);
+    connect(dumpBtn, &QPushButton::clicked, this, &MainWindow::onDumpClicked);
 }
