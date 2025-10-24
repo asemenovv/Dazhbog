@@ -159,17 +159,33 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
         auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
         auto toneMapper = TonemapACESProcessor();
         auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
-            m_Settings.BloomSigma, m_Settings.BloomIntensity);
+            m_Settings.BloomSigma, m_Settings.BloomIntensity, m_DumpFramesToDisc, m_DumpFolder);
         avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
         if (m_DumpFramesToDisc)
         {
-            firstBuffer.WritePng(m_DumpFolder + "/AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
+            firstBuffer.WritePng(m_DumpFolder + "/1. AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
         }
-        // bloomFilter.ProcessImage(firstBuffer, secondBuffer);
-        // hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
+        bloomFilter.ProcessImage(firstBuffer, secondBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            secondBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
+        }
+        hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            secondBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
+        }
         toneMapper.ProcessImage(firstBuffer, secondBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            secondBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
+        }
         gammaProcessor.ProcessImage(secondBuffer, firstBuffer);
-        secondBuffer.ToRGBA8(m_ImageData);
+        if (m_DumpFramesToDisc)
+        {
+            firstBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
+        }
+        firstBuffer.ToRGBA8(m_ImageData);
     } else {
         Image firstBuffer = {};
         firstBuffer.Resize(m_Width, m_Height);

@@ -31,7 +31,7 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     {
         if (action == MainWindow::ButtonAction::Dump)
         {
-            m_Renderer->DumpFramesToDisc("/Users/463536/CLionProjects/Dazhbog/dump");
+            m_Renderer->DumpFramesToDisc("/Users/alexeysemenov/CLionProjects/Dazhbog/dump");
         }
     });
     SetupScene();

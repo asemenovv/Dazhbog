@@ -95,7 +95,8 @@ public:
 
 class BloomProcessor final : public ImagePostProcessor {
 public:
-    explicit BloomProcessor(float threshold, int levels, int radius, float sigma, float intensity);
+    explicit BloomProcessor(float threshold, int levels, int radius, float sigma, float intensity,
+        bool dumpFramesToDisc, const std::string& dumpFolder);
 
     void ProcessImage(Image &input, Image &output) override;
 private:
@@ -116,4 +117,6 @@ private:
     int m_Radius;
     float m_Sigma;
     float m_Intensity;
+    bool m_DumpFramesToDisc;
+    std::string m_DumpFolder;
 };

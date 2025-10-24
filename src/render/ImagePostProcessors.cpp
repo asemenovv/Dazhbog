@@ -23,10 +23,21 @@ void Image::WritePng(const std::string& fileName) const
 
     png_write_info(png_ptr, info_ptr);
 
-    uint32_t* pixels = new uint32_t[Width * Height];
-    ToRGBA8(pixels);
-    for (int y = 0; y < Height; ++y) {
-        const auto row = reinterpret_cast<unsigned char*>(&pixels[y * Width * 4]);
+    std::vector<uint32_t> pixels32(Width * Height);
+    ToRGBA8(pixels32.data());
+
+    std::vector<png_byte> imageBytes(static_cast<size_t>(Width) * Height * 4);
+    for (size_t i = 0; i < pixels32.size(); ++i) {
+        uint32_t p = pixels32[i];
+
+        imageBytes[4*i + 0] = static_cast<png_byte>((p      ) & 0xFF);
+        imageBytes[4*i + 1] = static_cast<png_byte>((p >>  8) & 0xFF);
+        imageBytes[4*i + 2] = static_cast<png_byte>((p >> 16) & 0xFF);
+        imageBytes[4*i + 3] = static_cast<png_byte>((p >> 24) & 0xFF);
+    }
+
+    for (int y = Height - 1; y >= 0; --y) {
+        const png_bytep row = &imageBytes[static_cast<size_t>(y) * Width * 4];
         png_write_row(png_ptr, row);
     }
 
@@ -93,8 +104,10 @@ void TonemapACESProcessor::ProcessImage(Image &input, Image &output) {
     }
 }
 
-BloomProcessor::BloomProcessor(const float threshold, const int levels, const int radius, const float sigma, const float intensity)
-    : m_Threshold(threshold), m_Levels(levels), m_Radius(radius), m_Sigma(sigma), m_Intensity(intensity) {
+BloomProcessor::BloomProcessor(const float threshold, const int levels, const int radius, const float sigma,
+    const float intensity, bool dumpFramesToDisc, const std::string& dumpFolder)
+    : m_Threshold(threshold), m_Levels(levels), m_Radius(radius), m_Sigma(sigma), m_Intensity(intensity),
+    m_DumpFramesToDisc(dumpFramesToDisc), m_DumpFolder(dumpFolder) {
 }
 
 void BloomProcessor::ProcessImage(Image &input, Image &output) {
@@ -103,6 +116,10 @@ void BloomProcessor::ProcessImage(Image &input, Image &output) {
     Image bright {};
     bright.Resize(input.Width, input.Height);
     brightPass(input, bright);
+    if (m_DumpFramesToDisc)
+    {
+        bright.WritePng(m_DumpFolder + "/2.1. BloomBright.png");
+    }
 
     std::vector<Image> pyramid;
     pyramid.reserve(std::max(m_Levels, 1));
@@ -113,11 +130,20 @@ void BloomProcessor::ProcessImage(Image &input, Image &output) {
         current.Resize(input.Width, input.Height);
         downsample2x(pyramid.back(), current);
         pyramid.push_back(current);
+        if (m_DumpFramesToDisc)
+        {
+            current.WritePng(m_DumpFolder + "/2.2. BloomDownsamples_Level" + std::to_string(i+1) + ".png");
+        }
     }
 
+    int i = 1;
     for (auto& level : pyramid)
     {
         gaussianBlurSeparable(level);
+        if (m_DumpFramesToDisc)
+        {
+            level.WritePng(m_DumpFolder + "/2.2. BloomGaussianBlur_Level" + std::to_string(i++) + ".png");
+        }
     }
 
     for (int i = m_Levels - 1; i > 0; --i)
