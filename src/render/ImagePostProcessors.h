@@ -104,7 +104,7 @@ private:
 
     void brightPass(const Image &input, const Image &output);
 
-    void downsample2x(const Image &input, const Image &output);
+    void downsample2x(const Image &input, Image &output);
 
     [[nodiscard]] std::vector<float> gaussianKernel1D() const;
 

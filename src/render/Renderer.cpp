@@ -129,7 +129,7 @@ glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) co
 
     // const glm::vec3 dir = glm::normalize(ray.Direction);
     // const auto a = 0.5f * (dir.y + 1.0f);
-    // return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    // return 0.4f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
     return {0.0f, 0.0f, 0.0f};
 }
 
@@ -165,25 +165,25 @@ void Renderer::prepareFrame(const bool applyPostProcessors) {
         {
             firstBuffer.WritePng(m_DumpFolder + "/1. AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
         }
-        bloomFilter.ProcessImage(firstBuffer, secondBuffer);
+        bloomFilter.ProcessImage(firstBuffer, firstBuffer);
         if (m_DumpFramesToDisc)
         {
-            secondBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
+            firstBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
         }
-        hdrProcessor.ProcessImage(secondBuffer, firstBuffer);
+        hdrProcessor.ProcessImage(firstBuffer, secondBuffer);
         if (m_DumpFramesToDisc)
         {
             secondBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
         }
-        toneMapper.ProcessImage(firstBuffer, secondBuffer);
+        toneMapper.ProcessImage(secondBuffer, firstBuffer);
         if (m_DumpFramesToDisc)
         {
-            secondBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
+            firstBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
         }
-        gammaProcessor.ProcessImage(secondBuffer, firstBuffer);
+        gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
         if (m_DumpFramesToDisc)
         {
-            firstBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
+            secondBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
         }
         firstBuffer.ToRGBA8(m_ImageData);
     } else {

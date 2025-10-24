@@ -127,7 +127,6 @@ void BloomProcessor::ProcessImage(Image &input, Image &output) {
 
     for (int i = 1; i < m_Levels; ++i) {
         Image current {};
-        current.Resize(input.Width, input.Height);
         downsample2x(pyramid.back(), current);
         pyramid.push_back(current);
         if (m_DumpFramesToDisc)
@@ -149,6 +148,10 @@ void BloomProcessor::ProcessImage(Image &input, Image &output) {
     for (int i = m_Levels - 1; i > 0; --i)
     {
         upsampleAdd(pyramid[i - 1], pyramid[i], 1.0f);
+        if (m_DumpFramesToDisc)
+        {
+            pyramid[i - 1].WritePng(m_DumpFolder + "/2.2. BloomUpsampledAdd_Level" + std::to_string(i) + ".png");
+        }
     }
 
     for (uint32_t y = 0; y < output.Height; y++)
@@ -175,9 +178,10 @@ void BloomProcessor::brightPass(const Image &input, const Image &output) {
     }
 }
 
-void BloomProcessor::downsample2x(const Image &input, const Image &output) {
-    const uint32_t W = std::max(1, input.Width / 2);
-    const uint32_t H = std::max(1, input.Height / 2);
+void BloomProcessor::downsample2x(const Image &input, Image &output) {
+    const int W = std::max(1, input.Width / 2);
+    const int H = std::max(1, input.Height / 2);
+    output.Resize(W, H);
     for (int y=0; y < H; ++y) {
         for (int x = 0; x < W; ++x) {
             const int x0 = std::min(input.Width - 1, 2 * x);
