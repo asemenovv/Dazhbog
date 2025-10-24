@@ -37,10 +37,10 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
     m_Renderer->GetSettings().HDREnabled = true;
-    m_Renderer->GetSettings().BloomEnabled = false;
+    m_Renderer->GetSettings().BloomEnabled = true;
     m_Renderer->GetSettings().GammaCorrectionEnabled = true;
     m_Renderer->GetSettings().TonemapEnabled = true;
-    m_Renderer->GetSettings().Exposure = -1.0f;
+    m_Renderer->GetSettings().Exposure = 0.0f;
     m_Renderer->GetSettings().FramesToAccumulate = 500;
     m_Renderer->GetSettings().RayBounces = 5;
     m_Renderer->GetSettings().BloomThreshold = 1.0f;
