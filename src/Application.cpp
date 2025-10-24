@@ -36,6 +36,10 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     });
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
+    m_Renderer->GetSettings().HDREnabled = true;
+    m_Renderer->GetSettings().BloomEnabled = false;
+    m_Renderer->GetSettings().GammaCorrectionEnabled = true;
+    m_Renderer->GetSettings().TonemapEnabled = true;
     m_Renderer->GetSettings().Exposure = -1.0f;
     m_Renderer->GetSettings().FramesToAccumulate = 500;
     m_Renderer->GetSettings().RayBounces = 5;
@@ -43,7 +47,7 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_Renderer->GetSettings().BloomLevels = 8;
     m_Renderer->GetSettings().BloomRadius = 4;
     m_Renderer->GetSettings().BloomSigma = 2.0f;
-    m_Renderer->GetSettings().BloomIntensity = 0.6f;
+    m_Renderer->GetSettings().BloomIntensity = 0.2f;
 }
 
 int Application::Run() {
@@ -55,6 +59,7 @@ void Application::SetupScene() {
     m_Scene = std::make_unique<Scene>();
     const auto greenMat = m_Scene->Add(new LambertMaterial({0.8, 0.8, 0.0}));
     const auto blueMat = m_Scene->Add(new LambertMaterial({0.1, 0.2, 0.5}));
+    const auto greenShinyMat = m_Scene->Add(new DiffuseLightMaterial({0.0, 1.0, 0.0}, 10.0f));
     const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}, 0.04));
     const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}, 0.0));
     const auto lightMat = m_Scene->Add(new DiffuseLightMaterial({1.0, 0.706, 0.422}, 20.0));
@@ -71,7 +76,7 @@ void Application::SetupScene() {
         {1000.0f, 0.0f, -1000.0f},
         greenMat));
 
-    m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
+    m_Scene->Add(new Sphere(2.0f, greenShinyMat, glm::vec3(0.0f, 2.0f, 0.0f)));
     m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});

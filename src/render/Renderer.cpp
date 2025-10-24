@@ -31,7 +31,7 @@ Renderer::RenderingStatus Renderer::Render() {
 
     if (m_FrameIndex >= m_Settings.FramesToAccumulate)
     {
-        prepareFrame(true);
+        prepareFrame();
         m_IsRenderingFinished = true;
         return {
             .FrameIndex = m_FrameIndex,
@@ -63,7 +63,7 @@ Renderer::RenderingStatus Renderer::Render() {
 #endif
 
     if (m_FrameIndex % 10 == 0 || m_FrameIndex == 1) {
-        prepareFrame(true);
+        prepareFrame();
     }
     if (m_Settings.Accumulate) {
         m_FrameIndex++;
@@ -158,33 +158,45 @@ void Renderer::prepareFrame() {
         frameBuffer.WritePng(m_DumpFolder + "/1. AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
     }
 
-    auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
-        m_Settings.BloomSigma, m_Settings.BloomIntensity, m_DumpFramesToDisc, m_DumpFolder);
-    bloomFilter.ProcessImage(frameBuffer, frameBuffer);
-    if (m_DumpFramesToDisc)
+    if (m_Settings.BloomEnabled)
     {
-        frameBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
+        auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
+            m_Settings.BloomSigma, m_Settings.BloomIntensity, m_DumpFramesToDisc, m_DumpFolder);
+        bloomFilter.ProcessImage(frameBuffer, frameBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            frameBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
+        }
     }
 
-    auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
-    hdrProcessor.ProcessImage(frameBuffer, frameBuffer);
-    if (m_DumpFramesToDisc)
+    if (m_Settings.HDREnabled)
     {
-        frameBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
+        auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
+        hdrProcessor.ProcessImage(frameBuffer, frameBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            frameBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
+        }
     }
 
-    auto toneMapper = TonemapACESProcessor();
-    toneMapper.ProcessImage(frameBuffer, frameBuffer);
-    if (m_DumpFramesToDisc)
+    if (m_Settings.TonemapEnabled)
     {
-        frameBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
+        auto toneMapper = TonemapACESProcessor();
+        toneMapper.ProcessImage(frameBuffer, frameBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            frameBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
+        }
     }
 
-    auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
-    gammaProcessor.ProcessImage(frameBuffer, frameBuffer);
-    if (m_DumpFramesToDisc)
+    if (m_Settings.GammaCorrectionEnabled)
     {
-        frameBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
+        auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
+        gammaProcessor.ProcessImage(frameBuffer, frameBuffer);
+        if (m_DumpFramesToDisc)
+        {
+            frameBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
+        }
     }
     frameBuffer.ToRGBA8(m_ImageData);
     m_DumpFramesToDisc = false;

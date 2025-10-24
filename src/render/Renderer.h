@@ -1,12 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <QTimer>
 #include <glm/glm.hpp>
 
 #include "Camera.h"
 #include "ImagePostProcessors.h"
-#include "math/Geometry.h"
 #include "scene/Scene.h"
 #include "utils/Timer.h"
 
@@ -18,9 +16,13 @@ public:
     {
         bool Accumulate = true;
         uint32_t FramesToAccumulate = 300;
+        bool GammaCorrectionEnabled = true;
         float Gamma = 2.2f;
+        bool HDREnabled = true;
         float Exposure = 0.0f;
+        bool TonemapEnabled = true;
         uint32_t RayBounces = 5;
+        bool BloomEnabled = true;
         float BloomThreshold = 1.0f;
         int BloomLevels = 4;
         int BloomRadius = 6;

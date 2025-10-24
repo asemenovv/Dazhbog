@@ -39,6 +39,4 @@ private:
     std::unique_ptr<QTimer> m_RenderTimer;
 
     int64_t m_RenderTimeMs;
-
-    void addBox(int materialIndex);
 };
