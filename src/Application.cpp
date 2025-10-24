@@ -42,7 +42,7 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_Renderer->GetSettings().BloomThreshold = 1.0f;
     m_Renderer->GetSettings().BloomLevels = 8;
     m_Renderer->GetSettings().BloomRadius = 4;
-    m_Renderer->GetSettings().BloomSigma = 4.0f;
+    m_Renderer->GetSettings().BloomSigma = 2.0f;
     m_Renderer->GetSettings().BloomIntensity = 0.6f;
 }
 

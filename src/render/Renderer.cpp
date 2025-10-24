@@ -22,7 +22,7 @@ Renderer::Renderer(Camera* activeCamera, Scene* activeScene, const glm::vec2 vie
 }
 
 Renderer::RenderingStatus Renderer::Render() {
-    if (m_IsRenderingFinished) return{
+    if (m_IsRenderingFinished && !m_DumpFramesToDisc) return{
         .FrameIndex = m_FrameIndex,
         .RenderFinished = true,
         .SceneRenderTime = m_SceneRenderTimer->StopAndGetTime(),
@@ -147,53 +147,45 @@ HitPayload Renderer::traceRay(const Ray& ray) const {
     return nearestHitPayload;
 }
 
-void Renderer::prepareFrame(const bool applyPostProcessors) {
-    if (applyPostProcessors) {
-        Image firstBuffer = {};
-        Image secondBuffer = {};
-        firstBuffer.Resize(m_Width, m_Height);
-        secondBuffer.Resize(m_Width, m_Height);
+void Renderer::prepareFrame() {
+    Image frameBuffer {};
+    frameBuffer.Resize(m_AccumulationData.Width, m_AccumulationData.Height);
 
-        auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
-        auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
-        auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
-        auto toneMapper = TonemapACESProcessor();
-        auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
-            m_Settings.BloomSigma, m_Settings.BloomIntensity, m_DumpFramesToDisc, m_DumpFolder);
-        avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
-        if (m_DumpFramesToDisc)
-        {
-            firstBuffer.WritePng(m_DumpFolder + "/1. AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
-        }
-        bloomFilter.ProcessImage(firstBuffer, firstBuffer);
-        if (m_DumpFramesToDisc)
-        {
-            firstBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
-        }
-        hdrProcessor.ProcessImage(firstBuffer, secondBuffer);
-        if (m_DumpFramesToDisc)
-        {
-            secondBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
-        }
-        toneMapper.ProcessImage(secondBuffer, firstBuffer);
-        if (m_DumpFramesToDisc)
-        {
-            firstBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
-        }
-        gammaProcessor.ProcessImage(firstBuffer, secondBuffer);
-        if (m_DumpFramesToDisc)
-        {
-            secondBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
-        }
-        firstBuffer.ToRGBA8(m_ImageData);
-    } else {
-        Image firstBuffer = {};
-        firstBuffer.Resize(m_Width, m_Height);
-
-        auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
-        avgProcessor.ProcessImage(m_AccumulationData, firstBuffer);
-
-        firstBuffer.ToRGBA8(m_ImageData);
+    auto avgProcessor = AverageFramesProcessor(m_FrameIndex);
+    avgProcessor.ProcessImage(m_AccumulationData, frameBuffer);
+    if (m_DumpFramesToDisc)
+    {
+        frameBuffer.WritePng(m_DumpFolder + "/1. AccumulatedFrame_" + std::to_string(m_FrameIndex) + ".png");
     }
+
+    auto bloomFilter = BloomProcessor(m_Settings.BloomThreshold, m_Settings.BloomLevels, m_Settings.BloomRadius,
+        m_Settings.BloomSigma, m_Settings.BloomIntensity, m_DumpFramesToDisc, m_DumpFolder);
+    bloomFilter.ProcessImage(frameBuffer, frameBuffer);
+    if (m_DumpFramesToDisc)
+    {
+        frameBuffer.WritePng(m_DumpFolder + "/2. BloomOutput_" + std::to_string(m_FrameIndex) + ".png");
+    }
+
+    auto hdrProcessor = HDRProcessor(m_Settings.Exposure);
+    hdrProcessor.ProcessImage(frameBuffer, frameBuffer);
+    if (m_DumpFramesToDisc)
+    {
+        frameBuffer.WritePng(m_DumpFolder + "/3. HDR_" + std::to_string(m_FrameIndex) + ".png");
+    }
+
+    auto toneMapper = TonemapACESProcessor();
+    toneMapper.ProcessImage(frameBuffer, frameBuffer);
+    if (m_DumpFramesToDisc)
+    {
+        frameBuffer.WritePng(m_DumpFolder + "/4. ToneMap_" + std::to_string(m_FrameIndex) + ".png");
+    }
+
+    auto gammaProcessor = GammaCorrectionProcessor(m_Settings.Gamma);
+    gammaProcessor.ProcessImage(frameBuffer, frameBuffer);
+    if (m_DumpFramesToDisc)
+    {
+        frameBuffer.WritePng(m_DumpFolder + "/5. GammaCorrection_" + std::to_string(m_FrameIndex) + ".png");
+    }
+    frameBuffer.ToRGBA8(m_ImageData);
     m_DumpFramesToDisc = false;
 }

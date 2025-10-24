@@ -59,7 +59,7 @@ private:
 
     HitPayload traceRay(const Ray& ray) const;
 
-    void prepareFrame(bool applyPostProcessors);
+    void prepareFrame();
 
     Settings m_Settings;
 

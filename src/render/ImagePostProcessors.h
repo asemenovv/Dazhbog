@@ -10,9 +10,9 @@ struct Image {
         if (width != Width || height != Height) {
             delete[] Data;
             Data = new glm::vec4[width * height];
+            Width = width;
+            Height = height;
         }
-        Width = width;
-        Height = height;
     }
 
     void WritePng(const std::string& fileName) const;
