@@ -92,3 +92,40 @@ ScatterRays DiffuseLightMaterial::Scatter(const Ray &ray, const HitPayload &hitP
         .Emission = m_EmissionPower * m_EmissionColor
     };
 }
+
+DielectricMaterial::DielectricMaterial(float refractionIndex): m_RefractionIndex(refractionIndex) {
+}
+
+ScatterRays DielectricMaterial::Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t &randomSeed) const {
+    const float ri = hitPayload.FrontFace  ? (1.0 / m_RefractionIndex) : m_RefractionIndex;
+    const glm::vec3 direction = glm::normalize(ray.Direction);
+
+    double cosTheta = std::fmin(glm::dot(-direction, hitPayload.WorldNormal), 1.0);
+    double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+
+    bool cannotRefract = ri * sinTheta > 1.0;
+    ScatterRays scattered{};
+
+    if (cannotRefract || reflectance(cosTheta, ri) > Utils::RandomFloat(randomSeed))
+    {
+        glm::vec3 reflect = glm::reflect(direction, hitPayload.WorldNormal);
+        scattered.Ray = Ray(reflect, hitPayload.WorldPosition);
+    }
+    else
+    {
+        glm::vec3 refract = glm::refract(direction, hitPayload.WorldNormal, ri);
+        scattered.Ray = Ray(refract, hitPayload.WorldPosition);
+    }
+
+    scattered.Emission = {0.0f, 0.0f, 0.0f};
+    scattered.Attenuation = {1.0f, 1.0f, 1.0f};
+    scattered.Scattered = true;
+    return scattered;
+}
+
+double DielectricMaterial::reflectance(const double cosine, const double refractionIndex) {
+    // Use Schlick's approximation for reflectance.
+    auto r0 = (1 - refractionIndex) / (1 + refractionIndex);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * std::pow((1 - cosine),5);
+}

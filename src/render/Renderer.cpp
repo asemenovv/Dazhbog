@@ -127,10 +127,10 @@ glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) co
         return scatterRays.Emission;
     }
 
-    // const glm::vec3 dir = glm::normalize(ray.Direction);
-    // const auto a = 0.5f * (dir.y + 1.0f);
-    // return 0.4f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
-    return {0.0f, 0.0f, 0.0f};
+    const glm::vec3 dir = glm::normalize(ray.Direction);
+    const auto a = 0.5f * (dir.y + 1.0f);
+    return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    // return {0.0f, 0.0f, 0.0f};
 }
 
 HitPayload Renderer::traceRay(const Ray& ray) const {

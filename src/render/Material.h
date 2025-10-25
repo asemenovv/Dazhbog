@@ -46,3 +46,16 @@ private:
     glm::vec3 m_EmissionColor;
     float m_EmissionPower;
 };
+
+class DielectricMaterial final : public Material
+{
+public:
+    explicit DielectricMaterial(float refractionIndex);
+
+    ScatterRays Scatter(const Ray &ray, const HitPayload &hitPayload, uint32_t &randomSeed) const override;
+
+private:
+    static double reflectance(double cosine, double refractionIndex);
+
+    float m_RefractionIndex;
+};

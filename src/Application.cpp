@@ -31,18 +31,19 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     {
         if (action == MainWindow::ButtonAction::Dump)
         {
-            m_Renderer->DumpFramesToDisc("/Users/463536/CLionProjects/Dazhbog/dump");
+            const std::string homeDir = getenv("HOME");
+            m_Renderer->DumpFramesToDisc(homeDir + "/CLionProjects/Dazhbog/dump");
         }
     });
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
     m_Renderer->GetSettings().HDREnabled = true;
-    m_Renderer->GetSettings().BloomEnabled = true;
+    m_Renderer->GetSettings().BloomEnabled = false;
     m_Renderer->GetSettings().GammaCorrectionEnabled = true;
     m_Renderer->GetSettings().TonemapEnabled = true;
-    m_Renderer->GetSettings().Exposure = 0.0f;
+    m_Renderer->GetSettings().Exposure = -0.5f;
     m_Renderer->GetSettings().FramesToAccumulate = 500;
-    m_Renderer->GetSettings().RayBounces = 5;
+    m_Renderer->GetSettings().RayBounces = 1003;
     m_Renderer->GetSettings().BloomThreshold = 1.0f;
     m_Renderer->GetSettings().BloomLevels = 8;
     m_Renderer->GetSettings().BloomRadius = 4;
@@ -63,6 +64,7 @@ void Application::SetupScene() {
     const auto silverMat = m_Scene->Add(new MetalMaterial({0.8, 0.8, 0.8}, 0.04));
     const auto goldenMat = m_Scene->Add(new MetalMaterial({0.8, 0.6, 0.2}, 0.0));
     const auto lightMat = m_Scene->Add(new DiffuseLightMaterial({1.0, 0.706, 0.422}, 20.0));
+    const auto glass = m_Scene->Add(new DielectricMaterial(1.5f));
 
     //Floor
     m_Scene->Add(new Triangle(
@@ -76,8 +78,9 @@ void Application::SetupScene() {
         {1000.0f, 0.0f, -1000.0f},
         greenMat));
 
-    m_Scene->Add(new Sphere(2.0f, greenShinyMat, glm::vec3(0.0f, 2.0f, 0.0f)));
-    m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
+    m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
+    m_Scene->Add(new Sphere(2.0f, glass, glm::vec3(-4.2f, 2.0f, 0.0f)));
+    // m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
     constexpr glm::mat4 translateSilver = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});
