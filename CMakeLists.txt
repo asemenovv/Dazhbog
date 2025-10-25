@@ -34,6 +34,8 @@ add_executable(${PROJECT_NAME}
         src/render/ImagePostProcessors.cpp
         src/render/ImagePostProcessors.h
         src/math/ColorUtils.h
+        src/math/Random.h
+        src/math/Random.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

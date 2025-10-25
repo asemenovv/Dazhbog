@@ -13,7 +13,7 @@ void Camera::PlaceInWorld(const glm::vec3& position, const glm::vec3& direction)
 {
     m_Position = position;
     m_ForwardDirection = direction;
-    Refresh();
+    RecalculateView();
 }
 
 void Camera::OnResize(const uint32_t width, const uint32_t height) {
@@ -23,7 +23,8 @@ void Camera::OnResize(const uint32_t width, const uint32_t height) {
     m_ViewportWidth = width;
     m_ViewportHeight = height;
 
-    Refresh();
+    RecalculateProjection();
+    RecalculateView();
 }
 
 void Camera::RecalculateProjection() {
@@ -37,27 +38,24 @@ void Camera::RecalculateView() {
     m_InverseView = glm::inverse(m_View);
 }
 
-void Camera::RecalculateRayDirections() {
-    m_RayDirections.resize(m_ViewportWidth * m_ViewportHeight);
+Ray Camera::GetRay(const float pixelX, const float pixelY) const {
+    const float u = pixelX / static_cast<float>(m_ViewportWidth);
+    const float v = pixelY / static_cast<float>(m_ViewportHeight);
 
-    for (uint32_t y = 0; y < m_ViewportHeight; y++) {
-        for (uint32_t x = 0; x < m_ViewportWidth; x++) {
-            glm::vec2 coord = {
-                static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
-                static_cast<float>(y) / static_cast<float>(m_ViewportHeight)
-            };
-            coord = coord * 2.0f - 1.0f; // -1 -> 1
+    const glm::vec2 ndc = glm::vec2(u, v) * 2.0f - 1.0f;
+    const glm::vec4 target = m_InverseProjection * glm::vec4(ndc.x, ndc.y, 1.0f, 1.0f);
+    const glm::vec3 dirView = glm::normalize(glm::vec3(target) / target.w);
+    auto dirWorld = glm::vec3(m_InverseView * glm::vec4(dirView, 0.0f));
+    dirWorld = glm::normalize(dirWorld);
 
-            glm::vec4 target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
-            glm::vec3 rayDirection = glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
-            m_RayDirections[x + y * m_ViewportWidth] = rayDirection;
-        }
-    }
+    const Ray ray(m_Position, dirWorld);
+    return ray;
 }
 
 void Camera::MoveForward(const float stepAmount)
 {
-    m_Position -= glm::normalize(m_ForwardDirection) * stepAmount;
+    m_Position += glm::normalize(m_ForwardDirection) * stepAmount;
+    RecalculateView();
 }
 
 void Camera::MoveRight(const float stepAmount)
@@ -65,20 +63,23 @@ void Camera::MoveRight(const float stepAmount)
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
     const glm::vec3 rightDirection = glm::normalize(glm::cross(m_ForwardDirection, upDirection));
     m_Position += rightDirection * stepAmount;
+    RecalculateView();
 }
 
 void Camera::MoveUp(const float stepAmount)
 {
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
     m_Position += upDirection * stepAmount;
+    RecalculateView();
 }
 
 void Camera::Pitch(const float angle)
 {
     constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
-    const glm::vec3 rightDirection = glm::normalize(glm::cross(upDirection, m_ForwardDirection));
+    const glm::vec3 rightDirection = glm::normalize(glm::cross(m_ForwardDirection, upDirection));
     const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, rightDirection);
     m_ForwardDirection = glm::normalize(glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f)));
+    RecalculateView();
 }
 
 void Camera::Yaw(const float angle)
@@ -86,10 +87,5 @@ void Camera::Yaw(const float angle)
     constexpr glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
     const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, worldUp);
     m_ForwardDirection = glm::normalize(glm::vec3(rotation * glm::vec4(m_ForwardDirection, 1.0f)));
-}
-
-void Camera::Refresh()
-{
     RecalculateView();
-    RecalculateRayDirections();
 }

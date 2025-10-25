@@ -12,16 +12,22 @@
 
 class Renderer {
 public:
+    enum class RenderMode {
+        HighPerformance,
+        HighQuality
+    };
     struct Settings
     {
+        RenderMode RenderMode = RenderMode::HighPerformance;
         bool Accumulate = true;
-        uint32_t FramesToAccumulate = 300;
+        int FramesToAccumulate = 300;
         bool GammaCorrectionEnabled = true;
         float Gamma = 2.2f;
         bool HDREnabled = true;
         float Exposure = 0.0f;
         bool TonemapEnabled = true;
-        uint32_t RayBounces = 5;
+        int RayBounces = 5;
+        int SamplesPerPixel = 8;
         bool BloomEnabled = true;
         float BloomThreshold = 1.0f;
         int BloomLevels = 4;

@@ -11,6 +11,7 @@
 #include <oneapi/tbb/global_control.h>
 #endif
 
+#include "math/Random.h"
 #include "utils/Timer.h"
 
 
@@ -101,15 +102,25 @@ void Renderer::DumpFramesToDisc(const std::string& folder)
 }
 
 glm::vec4 Renderer::perPixel(const uint32_t x, const uint32_t y) const {
-    Ray ray;
-    ray.Origin = m_ActiveCamera->GetPosition();
-    ray.Direction = m_ActiveCamera->GetRayDirections()[x + m_Width * y];
 
-    uint32_t seed = x + m_Width * y;
-    seed *= m_FrameIndex;
+    glm::vec3 accum(0.0f);
+    const int samplesPerPixel = m_Settings.RenderMode == RenderMode::HighPerformance ? 1 : m_Settings.SamplesPerPixel;
 
-    auto rayColor = this->rayColor(ray, m_Settings.RayBounces, seed);
-    return {rayColor, 1.0f};
+    for (int s = 0; s < samplesPerPixel; s++) {
+        uint32_t seed = Utils::Random::SeedHash(x, y, s, m_FrameIndex);
+
+        const float jx = Utils::Random::RandomFloat(seed, 0.0f, 1.0f);
+        const float jy = Utils::Random::RandomFloat(seed, 0.0f, 1.0f);
+        const float px = static_cast<float>(x) + jx;
+        const float py = static_cast<float>(y) + jy;
+
+        Ray ray = m_ActiveCamera->GetRay(px, py);
+
+        accum += rayColor(ray, m_Settings.RayBounces, seed);
+    }
+
+    glm::vec3 avg = accum / static_cast<float>(samplesPerPixel);
+    return { avg, 1.0f };
 }
 
 glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) const {

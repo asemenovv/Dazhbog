@@ -25,7 +25,7 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     m_RenderTimer->start();
 
     m_Camera = std::make_unique<Camera>(45.0, 0.1, 100.0, m_Window->GetCanvasSize());
-    m_Camera->PlaceInWorld({0.4, 4.3, 11}, {0.2, 0.4, 0.9});
+    m_Camera->PlaceInWorld({0.4, 2.0, 11}, {-0.4, 0.0, -11.0});
     m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
     m_Window->SetButtonHandler([this](const MainWindow::ButtonAction action)
     {
@@ -38,12 +38,13 @@ Application::Application(int argc, char *argv[]) : m_RenderTimeMs(0) {
     SetupScene();
     m_Renderer = std::make_unique<Renderer>(m_Camera.get(), m_Scene.get(), m_Window->GetCanvasSize());
     m_Renderer->GetSettings().HDREnabled = true;
-    m_Renderer->GetSettings().BloomEnabled = false;
+    m_Renderer->GetSettings().BloomEnabled = true;
     m_Renderer->GetSettings().GammaCorrectionEnabled = true;
     m_Renderer->GetSettings().TonemapEnabled = true;
     m_Renderer->GetSettings().Exposure = -0.5f;
+    m_Renderer->GetSettings().Gamma = 2.2f;
     m_Renderer->GetSettings().FramesToAccumulate = 500;
-    m_Renderer->GetSettings().RayBounces = 1003;
+    m_Renderer->GetSettings().RayBounces = 5;
     m_Renderer->GetSettings().BloomThreshold = 1.0f;
     m_Renderer->GetSettings().BloomLevels = 8;
     m_Renderer->GetSettings().BloomRadius = 4;
@@ -80,7 +81,7 @@ void Application::SetupScene() {
 
     m_Scene->Add(new Sphere(2.0f, blueMat, glm::vec3(0.0f, 2.0f, 0.0f)));
     m_Scene->Add(new Sphere(2.0f, glass, glm::vec3(-4.2f, 2.0f, 0.0f)));
-    // m_Scene->Add(new Sphere(10.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
+    m_Scene->Add(new Sphere(4.0f, lightMat, glm::vec3(0.0f, 40.0f, -10.0f)));
 
     const glm::mat4 scale = glm::scale(glm::mat4(1.0), {10.0f, 10.0f, 10.0f});
     constexpr glm::mat4 translateSilver = glm::translate(glm::mat4(1.0), {20.0f, 5.0f, 20.0f});
@@ -128,11 +129,11 @@ void Application::OnUpdate(const float deltaTime) const {
         m_Camera->MoveUp(-static_cast<float>(deltaTime) * CAMERA_MOVE_SPEED);
         cameraMoved = true;
     }
-    if (Input::IsKeyPressed(Input::Key::ArrowRight)) {
+    if (Input::IsKeyPressed(Input::Key::ArrowLeft)) {
         m_Camera->Yaw(static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
-    if (Input::IsKeyPressed(Input::Key::ArrowLeft)) {
+    if (Input::IsKeyPressed(Input::Key::ArrowRight)) {
         m_Camera->Yaw(-static_cast<float>(deltaTime) * CAMERA_ROTATION_SPEED);
         cameraMoved = true;
     }
@@ -146,7 +147,6 @@ void Application::OnUpdate(const float deltaTime) const {
     }
 
     if (cameraMoved) {
-        m_Camera->Refresh();
         m_Window->UpdateCameraLocation(m_Camera->GetPosition(), m_Camera->GetDirection());
         m_Renderer->ResetFrameIndex();
     }

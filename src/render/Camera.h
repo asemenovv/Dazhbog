@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "math/Hittable.h"
+
 class Camera {
 public:
     Camera(float verticalFOV, float nearClip, float farClip, glm::vec2 viewportSize);
@@ -14,13 +16,11 @@ public:
 
     void RecalculateView();
 
-    void RecalculateRayDirections();
+    [[nodiscard]] const glm::vec3& GetPosition() const { return m_Position; }
 
-    const glm::vec3& GetPosition() const { return m_Position; }
+    [[nodiscard]] const glm::vec3& GetDirection() const { return m_ForwardDirection; }
 
-    const glm::vec3& GetDirection() const { return m_ForwardDirection; }
-
-    const std::vector<glm::vec3>& GetRayDirections() const { return m_RayDirections; }
+    [[nodiscard]] Ray GetRay(float pixelX, float pixelY) const;
 
     void MoveForward(float stepAmount);
 
@@ -31,8 +31,6 @@ public:
     void Pitch(float angle);
 
     void Yaw(float angle);
-
-    void Refresh();
 
 private:
     glm::mat4 m_Projection{ 1.0f };
