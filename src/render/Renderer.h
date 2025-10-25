@@ -58,6 +58,8 @@ public:
 
     Settings& GetSettings() { return m_Settings; }
 
+    void SetSettings(Settings settings);
+
     void DumpFramesToDisc(const std::string& folder);
 
 private:

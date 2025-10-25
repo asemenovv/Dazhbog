@@ -95,6 +95,11 @@ void Renderer::OnResize(const uint32_t width, const uint32_t height) {
     ResetFrameIndex();
 }
 
+void Renderer::SetSettings(Settings settings) {
+    m_Settings = settings;
+    ResetFrameIndex();
+}
+
 void Renderer::DumpFramesToDisc(const std::string& folder)
 {
     m_DumpFolder = folder;
@@ -140,7 +145,7 @@ glm::vec3 Renderer::rayColor(const Ray &ray, const int depth, uint32_t &seed) co
 
     const glm::vec3 dir = glm::normalize(ray.Direction);
     const auto a = 0.5f * (dir.y + 1.0f);
-    return 1.0f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
+    return 0.1f * ((1.0f - a) * glm::vec3(1.0, 1.0, 1.0) + a * glm::vec3(0.5, 0.7, 1.0));
     // return {0.0f, 0.0f, 0.0f};
 }
 

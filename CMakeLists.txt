@@ -12,8 +12,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        src/MainWindow.cpp
-        src/ImageCanvas.cpp
+        src/ui/MainWindow.cpp
+        src/ui/ImageCanvas.cpp
         src/render/Renderer.cpp
         src/render/Camera.cpp
         src/Application.cpp
@@ -36,6 +36,8 @@ add_executable(${PROJECT_NAME}
         src/math/ColorUtils.h
         src/math/Random.h
         src/math/Random.cpp
+        src/ui/RenderSettingsWidget.cpp
+        src/ui/RenderSettingsWidget.h
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src)

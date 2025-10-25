@@ -50,6 +50,14 @@ void MainWindow::ShowImage(const uint32_t *pixels) const {
     m_Canvas->SetImage(img.flipped());
 }
 
+void MainWindow::SetRenderSettingsChangedHandler(const RenderSettingsChangedHandler &handler) {
+    m_RenderSettingsChangedHandler = handler;
+}
+
+void MainWindow::SetRenderSettings(const Renderer::Settings &settings) const {
+    m_RenderSettingsWidget->SetSettings(settings);
+}
+
 void MainWindow::resizeEvent(QResizeEvent* event) {
     m_ResizeHandler(m_Canvas->width(), m_Canvas->height());
     QMainWindow::resizeEvent(event);
@@ -66,13 +74,29 @@ void MainWindow::onDumpClicked() const
 void MainWindow::setupUi() {
     auto* splitter = new QSplitter(Qt::Horizontal, this);
 
-    m_Canvas = new ImageCanvas(splitter);;
+    m_Canvas = new ImageCanvas();;
+    auto* rightPanel = new QFrame();
 
-    auto* rightPanel = new QFrame(splitter);
+    splitter->addWidget(m_Canvas);
+    splitter->addWidget(rightPanel);
+
+    QList<int> sizes;
+    sizes << 800 << 320; // левая область 800px, правая 320px
+    splitter->setSizes(sizes);
+
     rightPanel->setFrameShape(QFrame::NoFrame);
     auto* rightLayout = new QVBoxLayout(rightPanel);
     rightLayout->setContentsMargins(8, 8, 8, 8);
     rightLayout->setSpacing(8);
+
+    m_RenderSettingsWidget = new RenderSettingsWidget(rightPanel);
+
+    connect(m_RenderSettingsWidget, &RenderSettingsWidget::settingsChanged,
+            this, [&](const Renderer::Settings& settings){
+                if (m_RenderSettingsChangedHandler) {
+                    m_RenderSettingsChangedHandler(settings);
+                }
+            });
 
     auto* dumpBtn = new QPushButton("Dump", rightPanel);
     dumpBtn->setObjectName("btnDump");
@@ -83,6 +107,7 @@ void MainWindow::setupUi() {
     m_CameraPositionLabel = new QLabel("Camera Position: –", rightPanel);
     m_CameraDirectionLabel = new QLabel("Camera Direction: –", rightPanel);
 
+    rightLayout->addWidget(m_RenderSettingsWidget);
     rightLayout->addWidget(dumpBtn);
     rightLayout->addWidget(m_FrameLabel);
     rightLayout->addWidget(m_FrameRenderTimeLabel);

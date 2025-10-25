@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <QTimer>
 
-#include "MainWindow.h"
+#include "ui/MainWindow.h"
 #include "render/Camera.h"
 #include "render/Renderer.h"
 #include "scene/Scene.h"
